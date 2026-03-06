@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASCII Art Web</title>
+    <style>
+        body { font-family: sans-serif; margin: 2em; background-color: #f4f4f4; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 2em; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        textarea, select, button { width: 100%; padding: 10px; margin-bottom: 1em; border-radius: 4px; border: 1px solid #ccc; }
+        button { background-color: #007bff; color: white; border: none; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        pre { background-color: #333; color: #eee; padding: 1em; border-radius: 4px; white-space: pre; overflow-x: auto; }
+        .error { color: red; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>ASCII Art Generator</h1>
+        <form action="/ascii-art" method="POST">
+            <textarea name="text" rows="4" placeholder="Enter your text here...">{{.InputText}}</textarea>
+            <select name="banner">
+                <option value="standard" {{if eq .Banner "standard"}}selected{{end}}>Standard</option>
+                <option value="shadow" {{if eq .Banner "shadow"}}selected{{end}}>Shadow</option>
+                <option value="thinkertoy" {{if eq .Banner "thinkertoy"}}selected{{end}}>Thinkertoy</option>
+            </select>
+            <button type="submit">Generate</button>
+        </form>
+
+        {{if .Error}}
+            <p class="error">Error: {{.Error}}</p>
+        {{end}}
+
+        {{if .AsciiArt}}
+            <h2>Result:</h2>
+            <pre>{{.AsciiArt}}</pre>
+        {{end}}
+    </div>
+</body>
+</html>

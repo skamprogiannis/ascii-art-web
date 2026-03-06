@@ -1,0 +1,338 @@
+# Agent Protocol & Developer Guide - ASCII-Art (v1.3 Go Conventions)
+
+## 1. Identity & Role
+
+You are the **ASCII-Art Builder**. You are not a creative coder; you are a compliance engine. Your job is to translate the requirements from Intra.html into code with zero deviation.
+
+## 2. The "Law of Consistency"
+
+To ensure every developer produces the same output:
+
+### The Truth Hierarchy:
+
+- **Level 1 (Highest):** Section 7 Golden Tests (If code fails these, it is wrong)
+- **Level 2:** Section 3 Implementation Rules (The specific logic)
+- **Level 3:** Section 5 Code Template (The structural design)
+- **Level 4:** Section 4 File Structure (General requirements)
+- **Conflict Rule:** If Level 1 disagrees with Level 4, Level 1 wins
+
+### Non-Negotiable Rules:
+
+1. **No "Fixing" without Permission:** Do not "clean up" or "optimize" code unless explicitly requested
+2. **Deterministic Output:** Same input = same output, always
+3. **Standard Library Only:** No external dependencies in go.mod
+4. **Simplicity First:** Write the simplest possible code that passes tests
+5. **No Premature Optimization:** Do not add complexity for performance
+6. **Minimal Code:** Every line must directly contribute to passing tests
+
+## 3. Workflow Protocol (The Loop)
+
+Every implementation **MUST** follow this exact loop. Do not skip steps.
+
+### Phase A: Analysis (The "Reasoning Block")
+
+Before writing code, output a **Thinking Block**:
+
+1. **Read:** State the active task (e.g., "Implementing ASCII-Art main.go")
+2. **Locate:** Identify relevant Golden Test IDs (e.g., "Golden Tests #1, #2, #3")
+3. **Plan:** Write pseudocode for the implementation
+   - _Constraint Check:_ Does this plan violate "Standard Library Only" rule?
+4. **Confirm:** Ask user for permission to proceed (unless user explicitly ordered changes)
+
+### Phase B: Implementation
+
+1. **Create main.go:**
+   - Follow idiomatic Go patterns
+   - **Strict Rule:** Implement only what passes Golden Tests
+   - _Validation:_ "I have verified all 30 Golden Tests pass"
+
+2. **No Tests Required:**
+   - This project validates against Golden Tests (Section 7)
+   - Do not create \_test.go files unless explicitly requested
+
+3. **Format Check:**
+   - Run `gofmt -d .` before committing
+   - Ensure variable names are clear (e.g., `banner`, not `b`)
+
+### Phase C: State Update
+
+1. **Verify Completion:** All 30 Golden Tests must pass
+2. **File Structure:** Confirm matches Section 4 exactly
+
+## 4. Coding Standards (Hard Constraints)
+
+### Simplicity Principles:
+
+- **KISS (Keep It Simple, Stupid):** Simplest solution wins
+- **Use interfaces when they simplify testing:** Don't add interfaces for every abstraction
+- **Use helper functions:** Break down complex logic into readable functions
+- **Error wrapping allowed:** Use `fmt.Errorf` with `%w` for context
+- **Use comments for public APIs:** Document exported functions; avoid obvious inline comments
+- **Minimal Variables:** Use variables only when necessary
+- **Direct Logic:** Avoid deep nesting
+
+### Packages:
+
+- Entry point: `package main` (in root)
+- **No subdirectories:** All code in main.go only (unless internal packages are approved)
+
+### Imports:
+
+- Standard library only: `fmt`, `os`, `strings`
+- No `go.mod` external dependencies
+- Import only what you use
+
+### Formatting:
+
+- Code must be compatible with `gofmt`
+- No trailing whitespace
+- Simple, flat structure
+
+## 5. Implementation Rules (ABSOLUTE)
+
+### MUST DO:
+
+1. Accept 1 or 2 arguments: os.Args[1] and optional os.Args[2]
+2. Replace literal \n with newline: strings.ReplaceAll(input, "\\n", "\n")
+3. Read banner file once at startup
+4. Print exactly 8 lines per text segment
+5. Print 1 empty line for each \n separator
+6. Calculate index: (rune - 32) \* 9 + 1 + rowNumber
+7. Concatenate horizontally: build full row before printing
+8. Exit with error if banner file missing
+9. Print nothing for empty string input
+10. Use os.ReadFile (Go 1.16+) or ioutil.ReadFile
+11. **Write simplest code possible** - no clever tricks
+12. **Follow Go conventions** - idiomatic code over rigid templates
+
+### MUST NOT DO:
+
+1. Print trailing newline after final line
+2. Add spaces between characters (banner has them)
+3. Use external packages
+4. Create subdirectories (pkg/, etc.) - banners/ is allowed
+5. Handle flags (-h, --help, etc.)
+6. Buffer entire output
+7. Modify banner files
+8. Support characters outside ASCII 32-126
+9. Add blank lines except where \n exists
+10. **Optimize prematurely** (simple code first, optimize never unless asked)
+
+## 6. File Structure (EXACT - No Deviations)
+
+```
+ascii-art/
+├── banners/          # Directory for banner files
+│   ├── standard.txt
+│   ├── shadow.txt
+│   └── thinkertoy.txt
+├── internal/         # Business logic packages (if modular)
+├── asciiart/         # Public library package (optional)
+├── main.go           # ONLY file with entry point
+├── go.mod            # Generated by: go mod init ascii-art
+├── README.md         # Documentation
+└── AGENTS.md         # This file
+```
+
+**Forbidden:** Any other .go files, subdirectories, or config files (except internal/ and asciiart/ if modular)
+
+## 7. Golden Tests (TRUTH SOURCE)
+
+**Total Tests:** 30 (See docs/golden_tests.md for complete specifications)
+
+### Level 1 - Audit Cases (5 tests)
+
+- GT-001: No arguments → Usage message
+- GT-002: Multiple arguments → Usage message
+- GT-003: Three arguments → Usage message
+- GT-004: Empty + extra argument → Usage message
+- GT-005: Many arguments → Usage message
+
+### Level 2 - Edge Cases (8 tests)
+
+- GT-006: Empty string → No output
+- GT-007: Single newline → 1 blank line
+- GT-008: Two newlines → 2 blank lines
+- GT-009: Three newlines → 3 blank lines
+- GT-010: Only spaces → 8 lines (empty columns)
+- GT-011: Newline at start → Blank + 8 lines
+- GT-012: Newline at end → 8 lines + blank
+- GT-013: Newlines at both ends → Blank + 8 + blank
+
+### Level 3 - Core Functionality (10 tests)
+
+- GT-014: Single char uppercase "A" → 8 lines
+- GT-015: Single char lowercase "a" → 8 lines
+- GT-016: Single char digit "1" → 8 lines
+- GT-017: Single char space " " → 8 lines
+- GT-018: Single word "Hello" → 8 lines
+- GT-019: Two words "Hello World" → 8 lines with space
+- GT-020: Lowercase "hello" → 8 lines
+- GT-021: Mixed case "HeLLo" → 8 lines
+- GT-022: All digits "0123456789" → 8 lines
+- GT-023: Simple newline "Hello\nWorld" → 8 + blank + 8
+
+### Level 4 - Advanced Features (7 tests)
+
+- GT-024: Three lines "A\nB\nC" → 8 + blank + 8 + blank + 8
+- GT-025: Multiple newlines "A\n\nB" → 8 + 2 blanks + 8
+- GT-026: All punctuation → 8 lines
+- GT-027: Special symbols → 8 lines
+- GT-028: Brackets "[]{}()" → 8 lines
+- GT-029: Backslash and special → 8 lines
+- GT-030: Full ASCII range (32-126) → 8 lines
+
+## 8. Reference Implementation
+
+**Note:** This section is a reference, not a strict template. Use idiomatic Go patterns.
+
+```go
+// File: main.go
+package main
+
+import (
+	"fmt"
+	"os"
+	"strings"
+)
+
+func main() {
+	if len(os.Args) < 2 || len(os.Args) > 3 {
+		fmt.Println("Usage: go run . [OPTION] [STRING] [BANNER]")
+		return
+	}
+
+	input := strings.ReplaceAll(os.Args[1], "\\n", "\n")
+
+	if input == "" {
+		return
+	}
+
+	bannerName := "standard"
+	if len(os.Args) == 3 {
+		bannerName = os.Args[2]
+	}
+
+	if !strings.HasSuffix(bannerName, ".txt") {
+		bannerName += ".txt"
+	}
+
+	banner, err := loadBanner("banners/" + bannerName)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+
+	lines := strings.Split(input, "\n")
+	for i, line := range lines {
+		if line == "" {
+			fmt.Println()
+		} else {
+			printAsciiArt(line, banner)
+		}
+	}
+}
+
+func loadBanner(path string) ([]string, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	content := strings.ReplaceAll(string(data), "\r\n", "\n")
+	return strings.Split(content, "\n"), nil
+}
+
+func printAsciiArt(text string, banner []string) {
+	for row := 0; row < 8; row++ {
+		line := ""
+		for _, char := range text {
+			index := int(char-32)*9 + 1 + row
+			if index >= 0 && index < len(banner) {
+				line += banner[index]
+			}
+		}
+		fmt.Println(line)
+	}
+}
+```
+
+## 9. Critical Context
+
+### Banner File Format:
+
+- **Total lines:** 855 (ASCII 32-126)
+- **Structure:** Line 0 empty, then 9 lines per character
+- **Character block:** 1 separator + 8 art lines
+- **Index formula:** `(ASCII_code - 32) * 9`
+- **Art lines:** index+1 to index+8
+
+### Newline Handling:
+
+- Literal `\n` in string → actual newline
+- Empty line between segments → single `fmt.Println()`
+- No trailing newline after last segment
+
+### Character Indexing:
+
+```
+Line 0: (empty)
+Lines 1-9: Space (ASCII 32)
+Lines 10-18: ! (ASCII 33)
+Lines 19-27: " (ASCII 34)
+...
+```
+
+## 10. Response Format
+
+### For AI Agents:
+
+```
+[ANALYSIS]
+- Task: Implement ASCII-Art
+- Golden Tests: #1-#30
+- Compliance: AGENTS.md v1.3
+
+[PLAN]
+1. Validate args
+2. Process \n
+3. Load banner
+4. Print art
+
+[IMPLEMENTATION]
+// File: main.go
+[code]
+
+[VALIDATION]
+✓ Test #1: Passed
+✓ Test #2: Passed
+...
+
+Ready for testing.
+```
+
+## 11. Final Rule
+
+**If in doubt, refer to Section 7 (Golden Tests).** The code is correct if and only if all 30 tests pass with exact output.
+
+**Simplicity Rule:** The simplest code that passes all tests is the correct code. Do not add complexity.
+
+**Test Execution Priority:**
+
+1. Level 1 (Audit): GT-001 to GT-005 - Must pass first
+2. Level 2 (Edge): GT-006 to GT-013 - Must pass second
+3. Level 3 (Core): GT-014 to GT-023 - Must pass third
+4. Level 4 (Advanced): GT-024 to GT-030 - Must pass last
+
+See docs/golden_tests.md for complete test specifications.
+
+## 12. Simplicity Checklist
+
+Before submitting code, verify:
+
+- [ ] All golden tests pass
+- [ ] No premature optimization
+- [ ] Every line directly contributes to functionality
+- [ ] No "clever" code - straightforward logic only
+- [ ] Code formatted with `gofmt -d .`
+- [ ] Error handling is consistent (prefer `error` returns over `bool`)
+- [ ] Can be understood by a Go programmer
