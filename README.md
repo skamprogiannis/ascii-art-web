@@ -22,6 +22,12 @@ ASCII-Art-Web is a web application that converts text into ASCII art using diffe
 go run .
 ```
 
+If your environment is missing a C compiler (`gcc`) and `go run .` fails with a cgo error, run:
+
+```bash
+CGO_ENABLED=0 go run .
+```
+
 4. Open your browser and visit: `http://localhost:8080`
 5. Enter text, select a banner style, and click "Generate"
 
