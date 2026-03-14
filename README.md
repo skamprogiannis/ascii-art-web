@@ -6,7 +6,9 @@ ASCII-Art-Web is a web application that converts text into ASCII art using diffe
 
 ## Authors
 
-- Student
+- [gelafros](https://platform.zone01.gr/git/gelafros/)
+- [skamprog](https://platform.zone01.gr/git/skamprog/)
+- [emanola](https://platform.zone01.gr/git/emanola/)
 
 ## Usage
 
