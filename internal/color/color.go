@@ -1,3 +1,4 @@
+// Package color provides functionality for parsing and converting various color formats into ANSI escape codes.
 package color
 
 import (
@@ -7,10 +8,13 @@ import (
 	"strings"
 )
 
+// Color represents a terminal color, holding its ANSI escape code sequence.
 type Color struct {
 	Code string
 }
 
+// ParseColor evaluates a string representation of a color and returns a Color object.
+// It supports standard color names, hex codes (e.g., "#FF0000"), RGB (e.g., "rgb(255,0,0)"), and HSL formats.
 func ParseColor(colorStr string) (Color, error) {
 	if colorStr == "" {
 		return Color{}, fmt.Errorf("empty color")
@@ -30,6 +34,8 @@ func ParseColor(colorStr string) (Color, error) {
 	}
 }
 
+// parseANSIColor checks if the provided name matches a known standard terminal color
+// and returns its corresponding ANSI escape code.
 func parseANSIColor(name string) (Color, error) {
 	colors := map[string]string{
 		"black":   "\033[30m",
@@ -55,6 +61,7 @@ func parseANSIColor(name string) (Color, error) {
 	return Color{}, fmt.Errorf("unknown color")
 }
 
+// parseHexColor parses a hexadecimal color string (e.g., "#RRGGBB") into a truecolor ANSI escape code.
 func parseHexColor(hex string) (Color, error) {
 	hex = strings.TrimPrefix(hex, "#")
 	if len(hex) != 6 {
@@ -78,6 +85,7 @@ func parseHexColor(hex string) (Color, error) {
 	return Color{Code: code}, nil
 }
 
+// parseRGBColor parses an RGB color string (e.g., "rgb(255, 255, 255)") into a truecolor ANSI escape code.
 func parseRGBColor(rgb string) (Color, error) {
 	rgb = strings.TrimPrefix(rgb, "rgb(")
 	rgb = strings.TrimPrefix(rgb, "RGB(")
@@ -109,6 +117,7 @@ func parseRGBColor(rgb string) (Color, error) {
 	return Color{Code: code}, nil
 }
 
+// parseHSLColor parses an HSL color string (e.g., "hsl(360, 100%, 100%)") into a truecolor ANSI escape code.
 func parseHSLColor(hsl string) (Color, error) {
 	hsl = strings.TrimPrefix(hsl, "hsl(")
 	hsl = strings.TrimPrefix(hsl, "HSL(")
@@ -141,6 +150,7 @@ func parseHSLColor(hsl string) (Color, error) {
 	return Color{Code: code}, nil
 }
 
+// hslToRGB converts Hue, Saturation, and Lightness components into Red, Green, and Blue values (0-255).
 func hslToRGB(h, s, l int) (int, int, int) {
 	sf := float64(s) / 100
 	lf := float64(l) / 100
@@ -170,6 +180,7 @@ func hslToRGB(h, s, l int) (int, int, int) {
 	return int((r + m) * 255), int((g + m) * 255), int((b + m) * 255)
 }
 
+// parsePercentInt extracts an integer from a string that may contain a trailing percentage sign.
 func parsePercentInt(value string) (int, error) {
 	value = strings.TrimSpace(value)
 	value = strings.TrimSuffix(value, "%")
