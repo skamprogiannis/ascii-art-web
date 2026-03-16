@@ -2,7 +2,7 @@
 
 ## Overview
 
-18 tasks that build ASCII-Art using **modular architecture** and **strict TDD**. Each task creates testable components following Go best practices.
+20 tasks that build ASCII-Art-Web using **modular architecture** and **strict TDD**. Each task creates testable components following Go best practices.
 
 ## Critical Rules
 
@@ -57,8 +57,10 @@ Tasks contain:
 | 16   | Color Feature            | Implement --color flag           | 60min |
 | 17   | Docs Updates             | PRD + Architecture refresh       | 20min |
 | 18   | Internal Refactor        | Move core to internal packages   | 30min |
+| 19   | Web Server               | HTTP routing and status codes    | 45min |
+| 20   | Web Templates            | HTML GUI integration             | 45min |
 
-**Total Time:** ~5.5 hours  
+**Total Time:** ~7.0 hours  
 **Total Tests:** 30 golden tests + color extensions + unit tests
 
 ## File Structure (Final)

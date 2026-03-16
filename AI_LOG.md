@@ -619,3 +619,58 @@ Refactor `core/` into internal packages and add a public `asciiart` library pack
 **Status:** Color feature implemented with updated documentation and parsing logic.  
 **Tests:** `go test ./...` passes; manual color and substring cases verified.  
 **Release:** v1.3.0 tagged.
+
+---
+
+## Phase 5: Web Interface Implementation
+
+**Start Date:** 2026-03-16
+**Branch:** web
+**Approach:** HTTP Server & Template Integration
+**Goal:** Port CLI tool to a web application (ascii-art-web)
+
+---
+
+## TASK-19: Web Server & Routing Implementation ✅ COMPLETED
+
+**Agent:** gemini 3.1 pro | **LLM:** gemini-code-assist
+
+### Objective
+Initialize HTTP server and establish route handling.
+
+### Implementation Steps
+1. ✅ Configured `net/http` server listening on port 8080.
+2. ✅ Implemented `GET /` handler to serve the main HTML page.
+3. ✅ Implemented `POST /ascii-art` handler for form submission processing.
+4. ✅ Added robust HTTP status code handling (200 OK, 400 Bad Request, 404 Not Found, 500 Internal Server Error).
+
+### Files Modified
+- `main.go` - Added server start and route definitions.
+- `internal/server/handlers.go` (new) - Added HTTP handler logic.
+
+---
+
+## TASK-20: HTML Templates & GUI Integration ✅ COMPLETED
+
+**Agent:** gemini 3.1 pro | **LLM:** gemini-code-assist
+
+### Objective
+Create the web GUI using HTML templates.
+
+### Implementation Steps
+1. ✅ Created `templates/` directory.
+2. ✅ Developed `index.html` with a form for input text and banner selection.
+3. ✅ Parsed and rendered `index.html` using `html/template`.
+4. ✅ Updated `POST` handler to display generated ASCII art dynamically on the same page.
+
+### Files Modified
+- `templates/index.html` (new) - Web user interface.
+- `main.go` - Registered template parsing.
+
+---
+
+## WEB PROJECT COMPLETE ✅
+
+**Status:** Web interface successfully wraps the core ASCII art generator.
+**Tests:** Manual verification of endpoints, HTTP statuses, and banner styles.
+**Release:** v2.0.0 (Web Release).
