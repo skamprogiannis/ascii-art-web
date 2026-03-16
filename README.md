@@ -6,7 +6,9 @@ ASCII-Art-Web is a web application that converts text into ASCII art using diffe
 
 ## Authors
 
-- Student
+- [gelafros](https://platform.zone01.gr/git/gelafros/)
+- [skamprog](https://platform.zone01.gr/git/skamprog/)
+- [emanola](https://platform.zone01.gr/git/emanola/)
 
 ## Usage
 
@@ -18,6 +20,12 @@ ASCII-Art-Web is a web application that converts text into ASCII art using diffe
 
 ```bash
 go run .
+```
+
+If your environment is missing a C compiler (`gcc`) and `go run .` fails with a cgo error, run:
+
+```bash
+CGO_ENABLED=0 go run .
 ```
 
 4. Open your browser and visit: `http://localhost:8080`
