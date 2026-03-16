@@ -1,3 +1,4 @@
+// Package banner provides functionality for loading and processing ASCII art banners.
 package banner
 
 import (
@@ -5,6 +6,8 @@ import (
 	"strings"
 )
 
+// LoadBanner reads a banner file from the given path, normalizes Windows-style
+// line endings (CRLF) to Unix-style (LF), and returns the contents as a slice of strings.
 func LoadBanner(path string) ([]string, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {

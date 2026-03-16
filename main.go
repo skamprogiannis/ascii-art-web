@@ -1,3 +1,5 @@
+// Package main is the entry point for the ascii-art-web application.
+// It sets up an HTTP server to serve a web interface for generating ASCII art.
 package main
 
 import (
@@ -9,6 +11,7 @@ import (
 	"ascii-art-web/asciiart"
 )
 
+// PageData represents the data structure passed to the HTML template for rendering.
 type PageData struct {
 	AsciiArt  string
 	InputText string
@@ -16,12 +19,16 @@ type PageData struct {
 	Error     string
 }
 
+// tmpl holds the parsed HTML templates.
 var tmpl *template.Template
 
+// init parses the HTML templates on startup to avoid parsing them on every request.
 func init() {
 	tmpl = template.Must(template.ParseFiles("templates/index.html"))
 }
 
+// homeHandler serves the main index page. It handles GET requests to the root URL ("/").
+// It returns a 404 Not Found for any unrecognized paths and a 400 Bad Request for non-GET methods.
 func homeHandler(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		http.Error(w, "404 Not Found", http.StatusNotFound)
@@ -37,6 +44,8 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// asciiArtHandler processes form submissions to generate ASCII art.
+// It handles POST requests, validates the input, and executes the template with the result.
 func asciiArtHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "400 Bad Request", http.StatusBadRequest)
@@ -73,6 +82,7 @@ func asciiArtHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// main starts the HTTP server on port 8080 and registers the application's route handlers.
 func main() {
 	http.HandleFunc("/", homeHandler)
 	http.HandleFunc("/ascii-art", asciiArtHandler)

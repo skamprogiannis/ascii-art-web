@@ -1,3 +1,4 @@
+// Package parser handles the extraction and validation of command-line arguments.
 package parser
 
 import (
@@ -6,6 +7,8 @@ import (
 	"strings"
 )
 
+// ParseResult represents the extracted configuration from command-line arguments,
+// including the text input, the selected banner style, and optional color settings.
 type ParseResult struct {
 	Input       string
 	Banner      string
@@ -13,6 +16,9 @@ type ParseResult struct {
 	ColorSubstr string
 }
 
+// ParseInput processes os.Args to construct a ParseResult. It validates the presence
+// of required arguments, parses flags (such as --color), extracts the text and banner type,
+// and replaces literal "\n" sequences with actual newlines.
 func ParseInput() (ParseResult, error) {
 	if len(os.Args) < 2 {
 		return ParseResult{}, fmt.Errorf("invalid arguments")
