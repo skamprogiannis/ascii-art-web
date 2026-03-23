@@ -674,3 +674,32 @@ Create the web GUI using HTML templates.
 **Status:** Web interface successfully wraps the core ASCII art generator.
 **Tests:** Manual verification of endpoints, HTTP statuses, and banner styles.
 **Release:** v2.0.0 (Web Release).
+
+---
+
+## Phase 6: Interactive UX & Security Polish
+
+**Start Date:** 2026-03-23
+**Branch:** web
+**Approach:** Frontend Enhancements & Backend Hardening
+**Goal:** Upgrade web UI to SPA feel, add glassmorphism, and secure ASCII inputs.
+
+---
+
+## TASK-21: SPA Experience & Input Validation ✅ COMPLETED
+
+**Agent:** gemini 3.1 pro | **LLM:** gemini-code-assist
+
+### Objective
+Enhance user interface with interactive design principles and validate input bounds.
+
+### Implementation Steps
+1. ✅ Upgraded `index.html` CSS to a modern glassmorphism layout with responsive adjustments.
+2. ✅ Implemented Javascript `fetch` API for Single Page Application (SPA) seamless updates.
+3. ✅ Added Javascript debounce functionality for "Live Typing" auto-generation.
+4. ✅ Added a download button to easily save generated ASCII art as a `.txt` file.
+5. ✅ Updated `main.go` to explicitly reject non-ASCII characters (e.g., emojis) with a 400 Bad Request.
+
+### Files Modified
+- `templates/index.html` - Major UI/UX overhaul.
+- `main.go` - Added ASCII range validation loop.

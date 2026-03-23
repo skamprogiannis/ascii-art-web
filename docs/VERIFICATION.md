@@ -15,6 +15,10 @@
 - ✅ Submit button
 - ✅ Result display on same page
 - ✅ Error handling
+- ✅ Single Page Application (SPA) fetch updates
+- ✅ Live typing (debounce)
+- ✅ Download as .txt button
+- ✅ Canvas theme toggle (Dark/Light)
 
 ### Project Structure
 ```

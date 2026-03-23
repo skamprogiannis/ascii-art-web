@@ -34,9 +34,14 @@ CGO_ENABLED=0 go run .
 ### Features
 
 - Web-based GUI for ASCII art generation
+- Single Page Application (SPA) experience using JavaScript `fetch`
+- Live typing (debounced auto-generation)
 - Three banner styles: standard, shadow, thinkertoy
 - Real-time result display on the same page
+- Dark/Light mode canvas toggle
+- Download generated art as `.txt` file
 - Proper HTTP status code handling (200, 400, 404, 500)
+- Strict ASCII range validation (32-126) for secure input
 
 ## Implementation Details
 

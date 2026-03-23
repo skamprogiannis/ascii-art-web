@@ -2,13 +2,13 @@
 
 ## Overview
 
-20 tasks that build ASCII-Art-Web using **modular architecture** and **strict TDD**. Each task creates testable components following Go best practices.
+21 tasks that build ASCII-Art-Web using **modular architecture** and **strict TDD**. Each task creates testable components following Go best practices.
 
 ## Critical Rules
 
 ### 1. Sequential Execution
 
-Tasks MUST be completed in order (01 → 18). Each builds on previous tasks.
+Tasks MUST be completed in order (01 → 21). Each builds on previous tasks.
 
 ### 2. TDD Cycle (Mandatory)
 
@@ -59,8 +59,9 @@ Tasks contain:
 | 18   | Internal Refactor        | Move core to internal packages   | 30min |
 | 19   | Web Server               | HTTP routing and status codes    | 45min |
 | 20   | Web Templates            | HTML GUI integration             | 45min |
+| 21   | Web UX & Validation      | SPA, UI Polish, ASCII Check      | 45min |
 
-**Total Time:** ~7.0 hours  
+**Total Time:** ~7.75 hours  
 **Total Tests:** 30 golden tests + color extensions + unit tests
 
 ## File Structure (Final)
@@ -195,7 +196,7 @@ cd test && go test -v -run TestTask01  # GREEN
 
 Project is complete when:
 
-- [ ] All 18 tasks marked DONE
+- [ ] All 21 tasks marked DONE
 - [ ] All 30 golden tests pass
 - [ ] All unit tests pass
 - [ ] `go build` succeeds
