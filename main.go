@@ -13,9 +13,11 @@ import (
 
 // PageData represents the data structure passed to the HTML template for rendering.
 type PageData struct {
-	AsciiArt  string
+	AsciiArt  template.HTML
 	InputText string
 	Banner    string
+	Color     string
+	Substr    string
 	Error     string
 }
 
@@ -59,21 +61,33 @@ func asciiArtHandler(w http.ResponseWriter, r *http.Request) {
 
 	text := r.FormValue("text")
 	banner := r.FormValue("banner")
+	colorVal := r.FormValue("color")
+	substr := r.FormValue("substr")
 
 	if banner != "standard" && banner != "shadow" && banner != "thinkertoy" {
 		http.Error(w, "400 Bad Request", http.StatusBadRequest)
 		return
 	}
 
-	data := PageData{InputText: text, Banner: banner}
+	data := PageData{InputText: text, Banner: banner, Color: colorVal, Substr: substr}
+
+	// Validate that text only contains printable ASCII characters and newlines
+	for _, char := range text {
+		if (char < 32 || char > 126) && char != '\n' && char != '\r' {
+			w.WriteHeader(http.StatusBadRequest)
+			data.Error = "Invalid input: Only standard ASCII characters (32-126) are supported."
+			_ = tmpl.Execute(w, data)
+			return
+		}
+	}
 
 	if text != "" {
-		art, err := asciiart.RenderString(text, asciiart.Options{Banner: banner})
+		art, err := asciiart.RenderStringHTML(text, asciiart.Options{Banner: banner, Color: colorVal, Substr: substr})
 		if err != nil {
 			data.Error = err.Error()
 			w.WriteHeader(http.StatusInternalServerError)
 		} else {
-			data.AsciiArt = art
+			data.AsciiArt = template.HTML(art)
 		}
 	}
 
@@ -84,6 +98,7 @@ func asciiArtHandler(w http.ResponseWriter, r *http.Request) {
 
 // main starts the HTTP server on port 8080 and registers the application's route handlers.
 func main() {
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	http.HandleFunc("/", homeHandler)
 	http.HandleFunc("/ascii-art", asciiArtHandler)
 	fmt.Println("Server starting on http://localhost:8080")

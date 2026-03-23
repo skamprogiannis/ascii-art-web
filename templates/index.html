@@ -3,38 +3,388 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ASCII Art Web</title>
+    <title>ASCII Art Generator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+     <link rel="stylesheet" href="/static/style.css">
     <style>
-        body { font-family: sans-serif; margin: 2em; background-color: #f4f4f4; }
-        .container { max-width: 800px; margin: auto; background: white; padding: 2em; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        textarea, select, button { width: 100%; padding: 10px; margin-bottom: 1em; border-radius: 4px; border: 1px solid #ccc; }
-        button { background-color: #007bff; color: white; border: none; cursor: pointer; }
-        button:hover { background-color: #0056b3; }
-        pre { background-color: #333; color: #eee; padding: 1em; border-radius: 4px; white-space: pre; overflow-x: auto; }
-        .error { color: red; font-weight: bold; }
+        /* Prevent page-level scrolling, make it act like a fixed app */
+        /* Modern App Layout with Glassmorphism */
+        body {
+            margin: 0;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            padding: 2rem 1.5rem 1.5rem !important; /* Override style.css default */
+        }
+        header { 
+            flex-shrink: 0; 
+            margin-bottom: 1.5rem !important; 
+        }
+        .layout {
+            flex: 1;
+            overflow: hidden;
+            min-height: 0; /* Allows children to shrink and scroll */
+            display: flex;
+            flex-direction: row;
+            gap: 1.5rem;
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        /* Glass Panels */
+        .panel {
+            overflow-y: auto;
+            height: 100%;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--r-lg);
+            padding: 1.5rem;
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+        }
+        
+        /* Custom WebKit Scrollbars globally (panels, textareas, code blocks) */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(139, 92, 246, 0.4); }
+
+        .panel-form { flex: 0 0 380px; }
+        .panel-output { flex: 1; display: flex; flex-direction: column; transition: opacity 0.3s ease; }
+        
+        /* Smooth entry animation for new content */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .panel-output > * { animation: fadeIn 0.4s ease-out; }
+        
+        /* Empty state styling */
+        .output-empty {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            border: 2px dashed rgba(255, 255, 255, 0.1);
+            border-radius: var(--r);
+            background: rgba(0, 0, 0, 0.2);
+            min-height: 200px;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        .output-empty-icon { font-size: 2.5rem; margin-bottom: 0.5rem; opacity: 0.5; animation: float 3s ease-in-out infinite; }
+        .output-actions { display: flex; align-items: center; gap: 0.75rem; }
+
+        /* Responsive: Stack vertically on mobile */
+        @media (max-width: 860px) {
+            body { padding: 1rem !important; }
+            .layout { flex-direction: column; gap: 1rem; }
+            .panel-form { flex: none; height: auto; flex-shrink: 0; }
+            .panel-output { flex: 1; min-height: 300px; }
+        }
+
+        /* Canvas backgrounds to ensure text visibility regardless of color */
+        .canvas-dark { background-color: #121212 !important; color: #f8f8f2; }
+        .canvas-light { background-color: #f9fafb !important; color: #111827; }
+        #art-output {
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            transition: background-color 0.3s, color 0.3s;
+            min-height: 150px;
+        }
+        footer { margin-top: 1rem !important; flex-shrink: 0; width: 100%; text-align: center; }
     </style>
 </head>
 <body>
-    <div class="container">
+    <header>
+        <div class="logo-icon" aria-hidden="true">⌨</div>
         <h1>ASCII Art Generator</h1>
-        <form action="/ascii-art" method="POST">
-            <textarea name="text" rows="4" placeholder="Enter your text here...">{{.InputText}}</textarea>
-            <select name="banner">
-                <option value="standard" {{if eq .Banner "standard"}}selected{{end}}>Standard</option>
-                <option value="shadow" {{if eq .Banner "shadow"}}selected{{end}}>Shadow</option>
-                <option value="thinkertoy" {{if eq .Banner "thinkertoy"}}selected{{end}}>Thinkertoy</option>
-            </select>
-            <button type="submit">Generate</button>
-        </form>
+        <p>Type text, pick a style and color, then generate.</p>
+    </header>
 
-        {{if .Error}}
-            <p class="error">Error: {{.Error}}</p>
-        {{end}}
+    <div class="layout">
 
-        {{if .AsciiArt}}
-            <h2>Result:</h2>
-            <pre>{{.AsciiArt}}</pre>
-        {{end}}
+        <!-- LEFT: controls -->
+        <aside class="panel panel-form">
+            <form action="/ascii-art" method="POST" id="art-form" novalidate>
+
+                <div class="form-group">
+                    <div class="label-row">
+                        <label for="text">Your text</label>
+                        <span class="char-counter" id="char-counter" aria-live="polite">0 / 200</span>
+                    </div>
+                    <textarea id="text" name="text" rows="3"
+                        placeholder="e.g. Hello World"
+                        maxlength="200">{{.InputText}}</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Banner style</label>
+                    <div class="style-cards" role="radiogroup" aria-label="Banner style">
+                        <label class="style-card {{if eq .Banner "standard"}}active{{end}}">
+                            <input type="radio" name="banner" value="standard" {{if eq .Banner "standard"}}checked{{end}}>
+                            <pre class="style-preview"> _  _
+| || |
+|_||_|</pre>
+                            <span class="style-name">Standard</span>
+                        </label>
+                        <label class="style-card {{if eq .Banner "shadow"}}active{{end}}">
+                            <input type="radio" name="banner" value="shadow" {{if eq .Banner "shadow"}}checked{{end}}>
+                            <pre class="style-preview">_   _
+| |_| |
+\___/ </pre>
+                            <span class="style-name">Shadow</span>
+                        </label>
+                        <label class="style-card {{if eq .Banner "thinkertoy"}}active{{end}}">
+                            <input type="radio" name="banner" value="thinkertoy" {{if eq .Banner "thinkertoy"}}checked{{end}}>
+                            <pre class="style-preview">o  o
+|  |
+o--o</pre>
+                            <span class="style-name">Thinkertoy</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Art color <span class="field-hint">(optional)</span></label>
+                    <div class="color-row">
+                        <div class="color-swatch-wrap" title="Click to open color picker">
+                            <input type="color" id="color-picker" value="#8b5cf6" aria-label="Pick a color">
+                            <div class="color-swatch" id="color-swatch" style="background:#8b5cf6"></div>
+                        </div>
+                        <input type="text" id="color-text" name="color"
+                            placeholder="e.g. #8b5cf6 · red · rgb(255,0,0)"
+                            value="{{.Color}}" autocomplete="off" spellcheck="false">
+                    </div>
+                    <div class="color-presets" id="color-presets" role="group" aria-label="Color presets">
+                        <button type="button" data-color="#f87171" style="--c:#f87171" title="Red"    aria-label="Red"></button>
+                        <button type="button" data-color="#fb923c" style="--c:#fb923c" title="Orange" aria-label="Orange"></button>
+                        <button type="button" data-color="#facc15" style="--c:#facc15" title="Yellow" aria-label="Yellow"></button>
+                        <button type="button" data-color="#4ade80" style="--c:#4ade80" title="Green"  aria-label="Green"></button>
+                        <button type="button" data-color="#38bdf8" style="--c:#38bdf8" title="Sky"    aria-label="Sky blue"></button>
+                        <button type="button" data-color="#8b5cf6" style="--c:#8b5cf6" title="Purple" aria-label="Purple"></button>
+                        <button type="button" data-color="#f472b6" style="--c:#f472b6" title="Pink"   aria-label="Pink"></button>
+                        <button type="button" data-color="#ffffff" style="--c:#ffffff" title="White"  aria-label="White"></button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="substr">Color target <span class="field-hint">— leave blank to color everything</span></label>
+                    <input type="text" id="substr" name="substr"
+                        placeholder="e.g. Hello — only this word gets colored"
+                        value="{{.Substr}}" autocomplete="off" spellcheck="false">
+                </div>
+
+                <button type="submit" class="btn-generate" id="btn-generate">
+                    <span class="btn-label">Generate</span>
+                    <span class="btn-spinner" aria-hidden="true"></span>
+                </button>
+
+                <p class="empty-warning" id="empty-warning" role="alert" aria-live="assertive">
+                    ⚠ Please enter some text first.
+                </p>
+            </form>
+        </aside>
+
+        <!-- RIGHT: output -->
+        <section class="panel panel-output">
+            <!-- Output content injected here via template or JS -->
+            {{template "output-content" .}}
+        </section>
+
     </div>
+
+    <footer>ASCII Art Web &mdash; Go standard library only</footer>
+
+    <!-- Define a sub-template so JS can cleanly extract this section -->
+    {{define "output-content"}}
+        {{if or .AsciiArt .Error}}
+            <div class="result-header">
+                <h2>Output</h2>
+                <div class="output-actions">
+                    <button type="button" id="theme-toggle" class="copy-btn" title="Toggle Dark/Light Canvas">◑ Background</button>
+                    {{if .AsciiArt}}
+                        <span class="badge badge-success">✓ Generated</span>
+                        <button class="copy-btn" id="copy-btn" type="button">⎘ Copy</button>
+                        <button class="copy-btn" id="download-btn" type="button" title="Download text file">⭳ Download</button>
+                    {{else}}
+                        <span class="badge badge-error">✕ Error</span>
+                    {{end}}
+                </div>
+            </div>
+
+            {{if .Error}}
+                <div class="error-box" role="alert">{{.Error}}</div>
+            {{end}}
+
+            {{if .AsciiArt}}
+                <div class="pre-wrap">
+                    <pre id="art-output" class="canvas-dark">{{.AsciiArt}}</pre>
+                </div>
+            {{end}}
+        {{else}}
+            <div class="output-empty">
+                <span class="output-empty-icon" aria-hidden="true">✦</span>
+                <p>Your ASCII art will appear here</p>
+            </div>
+        {{end}}
+    {{end}}
+
+    <script>
+    (() => {
+        const textarea = document.getElementById('text');
+        const counter  = document.getElementById('char-counter');
+
+        // ── Char counter ──
+        const updateCounter = () => {
+            const n = textarea.value.length;
+            counter.textContent = `${n} / 200`;
+            counter.classList.toggle('warn', n > 160);
+            counter.classList.toggle('over', n >= 200);
+        };
+        textarea.addEventListener('input', updateCounter);
+        updateCounter();
+
+        // ── Enter anywhere (except inside textarea) submits ──
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Enter' && document.activeElement !== textarea) {
+                e.preventDefault();
+                document.getElementById('art-form').requestSubmit();
+            }
+        });
+
+        // ── Style card highlight + auto-submit ──
+        document.querySelectorAll('.style-card input[type=radio]').forEach(radio => {
+            radio.addEventListener('change', () => {
+                document.querySelectorAll('.style-card').forEach(c => c.classList.remove('active'));
+                radio.closest('.style-card').classList.add('active');
+                if (textarea.value.trim()) document.getElementById('art-form').requestSubmit();
+            });
+        });
+
+        // ── Color picker ↔ text ↔ swatch ──
+        const picker  = document.getElementById('color-picker');
+        const colorTx = document.getElementById('color-text');
+        const swatch  = document.getElementById('color-swatch');
+
+        const updateSwatch = v => { swatch.style.background = v || 'transparent'; };
+
+        picker.addEventListener('input', () => { colorTx.value = picker.value; updateSwatch(picker.value); });
+        colorTx.addEventListener('input', () => {
+            const v = colorTx.value.trim();
+            updateSwatch(v);
+            if (/^#[0-9a-fA-F]{6}$/.test(v)) picker.value = v;
+        });
+
+        // Auto-submit on color change
+        const autoSubmit = () => { if (textarea.value.trim()) document.getElementById('art-form').requestSubmit(); };
+        picker.addEventListener('change', autoSubmit);
+        colorTx.addEventListener('change', autoSubmit);
+
+        updateSwatch(colorTx.value || '#8b5cf6');
+
+        // ── Color presets ──
+        document.querySelectorAll('#color-presets button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const c = btn.dataset.color;
+                colorTx.value = c; picker.value = c; updateSwatch(c);
+                document.querySelectorAll('#color-presets button').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                autoSubmit();
+            });
+        });
+
+        // ── Validate + loading state ──
+        const warning = document.getElementById('empty-warning');
+        const form = document.getElementById('art-form');
+        const outputPanel = document.querySelector('.panel-output');
+
+        form.addEventListener('submit', async e => {
+            if (!textarea.value.trim()) {
+                e.preventDefault();
+                warning.classList.add('visible');
+                textarea.focus();
+                return;
+            }
+            e.preventDefault(); // Stop normal page reload!
+            warning.classList.remove('visible');
+            document.getElementById('btn-generate').classList.add('loading');
+            outputPanel.style.opacity = '0.5'; // Visual feedback that it's processing
+
+            try {
+                // Interactive Design: Fetch data asynchronously
+                const response = await fetch(form.action, { method: form.method, body: new URLSearchParams(new FormData(form)) });
+                const html = await response.text();
+                
+                // Parse the new HTML and extract just the output section
+                const doc = new DOMParser().parseFromString(html, 'text/html');
+                outputPanel.innerHTML = doc.querySelector('.panel-output').innerHTML;
+                
+                bindOutputEvents(); // Consistency: Re-attach events to new buttons
+            } catch (err) {
+                console.error("Failed to generate art:", err);
+            } finally {
+                outputPanel.style.opacity = '1';
+                document.getElementById('btn-generate').classList.remove('loading');
+            }
+        });
+
+        // ── Live Typing (Debounce) ──
+        let typingTimer;
+        textarea.addEventListener('input', () => {
+            warning.classList.remove('visible');
+            clearTimeout(typingTimer); // Clear the timer if the user keeps typing
+            // Wait 500ms after the user stops typing before auto-submitting
+            if (textarea.value.trim()) typingTimer = setTimeout(() => form.requestSubmit(), 500);
+        });
+
+        // ── Dynamic Output Events (Copy & Theme) ──
+        function bindOutputEvents() {
+            const copyBtn = document.getElementById('copy-btn');
+            if (copyBtn) {
+                copyBtn.addEventListener('click', () => {
+                    navigator.clipboard.writeText(document.getElementById('art-output').textContent).then(() => {
+                        copyBtn.textContent = '✓ Copied!';
+                        copyBtn.classList.add('copied');
+                        setTimeout(() => { copyBtn.textContent = '⎘ Copy'; copyBtn.classList.remove('copied'); }, 2000);
+                    });
+                });
+            }
+
+            const downloadBtn = document.getElementById('download-btn');
+            if (downloadBtn) {
+                downloadBtn.addEventListener('click', () => {
+                    // Grab the raw text, convert to a Blob, and trigger a hidden download link
+                    const text = document.getElementById('art-output').textContent;
+                    const blob = new Blob([text], { type: 'text/plain' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'ascii-art.txt';
+                    a.click();
+                    URL.revokeObjectURL(url); // Clean up memory
+                });
+            }
+
+            const themeToggle = document.getElementById('theme-toggle');
+            const artOutput = document.getElementById('art-output');
+            if (themeToggle && artOutput) {
+                themeToggle.addEventListener('click', () => {
+                    const isDark = artOutput.classList.contains('canvas-dark');
+                    artOutput.classList.toggle('canvas-dark', !isDark);
+                    artOutput.classList.toggle('canvas-light', isDark);
+                });
+            }
+        }
+        bindOutputEvents(); // Bind on initial load
+    })();
+    </script>
 </body>
 </html>
