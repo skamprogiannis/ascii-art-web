@@ -55,7 +55,7 @@
         ::-webkit-scrollbar-thumb:hover { background: rgba(139, 92, 246, 0.4); }
 
         .panel-form { flex: 0 0 380px; }
-        .panel-output { flex: 1; display: flex; flex-direction: column; transition: opacity 0.3s ease; }
+        .panel-output { flex: 1; min-width: 0; display: flex; flex-direction: column; transition: opacity 0.3s ease; }
         
         /* Smooth entry animation for new content */
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
@@ -84,20 +84,28 @@
         /* Responsive: Stack vertically on mobile */
         @media (max-width: 860px) {
             body { padding: 1rem !important; }
-            .layout { flex-direction: column; gap: 1rem; }
-            .panel-form { flex: none; height: auto; flex-shrink: 0; }
-            .panel-output { flex: 1; min-height: 300px; }
+            .layout { flex-direction: column; flex-wrap: nowrap; gap: 1rem; }
+            .panel-form { flex: 0 0 auto; height: auto; }
+            .panel-output { flex: 1 1 300px; }
         }
 
         /* Canvas backgrounds to ensure text visibility regardless of color */
         .canvas-dark { background-color: #121212 !important; color: #f8f8f2; }
         .canvas-light { background-color: #f9fafb !important; color: #111827; }
+        
+        /* Allow the output box itself to fill space and scroll vertically */
+        .pre-wrap {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
         #art-output {
             padding: 1.5rem;
             border-radius: 0.5rem;
-            overflow-x: auto;
+            overflow: auto;
             transition: background-color 0.3s, color 0.3s;
-            min-height: 150px;
+            flex: 1;
         }
         footer { margin-top: 1rem !important; flex-shrink: 0; width: 100%; text-align: center; }
     </style>
@@ -181,11 +189,6 @@ o--o</pre>
                         placeholder="e.g. Hello — only this word gets colored"
                         value="{{.Substr}}" autocomplete="off" spellcheck="false">
                 </div>
-
-                <button type="submit" class="btn-generate" id="btn-generate">
-                    <span class="btn-label">Generate</span>
-                    <span class="btn-spinner" aria-hidden="true"></span>
-                </button>
 
                 <p class="empty-warning" id="empty-warning" role="alert" aria-live="assertive">
                     ⚠ Please enter some text first.
@@ -315,12 +318,46 @@ o--o</pre>
             }
             e.preventDefault(); // Stop normal page reload!
             warning.classList.remove('visible');
-            document.getElementById('btn-generate').classList.add('loading');
             outputPanel.style.opacity = '0.5'; // Visual feedback that it's processing
 
             try {
+                // ── Magic Auto-Wrapper (Prevents horizontal scrolling) ──
+                const formData = new FormData(form);
+                const rawText = formData.get('text');
+                const maxChars = 12; // Auto-wrap limit
+                
+                const wrappedText = rawText.split('\n').map(line => {
+                    let out = '';
+                    let currentLine = '';
+                    let words = line.split(' ');
+                    for (let word of words) {
+                        // If a single word is too long without spaces, forcefully slice it
+                        if (word.length > maxChars) {
+                            if (currentLine) { out += currentLine.trim() + '\n'; currentLine = ''; }
+                            let w = word;
+                            while (w.length > maxChars) {
+                                out += w.substring(0, maxChars) + '\n';
+                                w = w.substring(maxChars);
+                            }
+                            currentLine = w + ' ';
+                        } else if ((currentLine + word).length > maxChars && currentLine.length > 0) {
+                            out += currentLine.trim() + '\n';
+                            currentLine = word + ' ';
+                        } else {
+                            currentLine += word + ' ';
+                        }
+                    }
+                    return out + currentLine.trim();
+                }).join('\n');
+                
+                formData.set('text', wrappedText);
+
+                // Remember user's theme preference before swapping HTML
+                const oldArt = document.getElementById('art-output');
+                const isLight = oldArt && oldArt.classList.contains('canvas-light');
+
                 // Interactive Design: Fetch data asynchronously
-                const response = await fetch(form.action, { method: form.method, body: new URLSearchParams(new FormData(form)) });
+                const response = await fetch(form.action, { method: form.method, body: new URLSearchParams(formData) });
                 const html = await response.text();
                 
                 // Parse the new HTML and extract just the output section
@@ -328,11 +365,16 @@ o--o</pre>
                 outputPanel.innerHTML = doc.querySelector('.panel-output').innerHTML;
                 
                 bindOutputEvents(); // Consistency: Re-attach events to new buttons
+                
+                // Re-apply the light theme if it was active
+                if (isLight) {
+                    const newArt = document.getElementById('art-output');
+                    if (newArt) { newArt.classList.remove('canvas-dark'); newArt.classList.add('canvas-light'); }
+                }
             } catch (err) {
                 console.error("Failed to generate art:", err);
             } finally {
                 outputPanel.style.opacity = '1';
-                document.getElementById('btn-generate').classList.remove('loading');
             }
         });
 
@@ -343,6 +385,14 @@ o--o</pre>
             clearTimeout(typingTimer); // Clear the timer if the user keeps typing
             // Wait 500ms after the user stops typing before auto-submitting
             if (textarea.value.trim()) typingTimer = setTimeout(() => form.requestSubmit(), 500);
+        });
+
+        // ── Auto-color Substring (Debounce) ──
+        const substrInput = document.getElementById('substr');
+        let substrTimer;
+        substrInput.addEventListener('input', () => {
+            clearTimeout(substrTimer);
+            if (textarea.value.trim()) substrTimer = setTimeout(() => form.requestSubmit(), 500);
         });
 
         // ── Dynamic Output Events (Copy & Theme) ──

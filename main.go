@@ -7,6 +7,8 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"strings"
+	"time"
 
 	"ascii-art-web/asciiart"
 )
@@ -59,7 +61,17 @@ func asciiArtHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	text := r.FormValue("text")
+	// Normalize text: remove Windows carriage returns (\r)
+	rawText := r.FormValue("text")
+	text := strings.ReplaceAll(rawText, "\r\n", "\n")
+	text = strings.ReplaceAll(text, "\r", "")
+
+	// Prevent Denial of Service (DoS) by enforcing a strict length limit
+	if len(text) > 1000 {
+		http.Error(w, "400 Bad Request", http.StatusBadRequest)
+		return
+	}
+
 	banner := r.FormValue("banner")
 	colorVal := r.FormValue("color")
 	substr := r.FormValue("substr")
@@ -101,8 +113,16 @@ func main() {
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	http.HandleFunc("/", homeHandler)
 	http.HandleFunc("/ascii-art", asciiArtHandler)
+
+	srv := &http.Server{
+		Addr:         ":8080",
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		IdleTimeout:  120 * time.Second,
+	}
+
 	fmt.Println("Server starting on http://localhost:8080")
-	if err := http.ListenAndServe(":8080", nil); err != nil {
+	if err := srv.ListenAndServe(); err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
 }

@@ -12,7 +12,6 @@
 ### Features
 - ✅ Text input field
 - ✅ Banner selection (standard, shadow, thinkertoy)
-- ✅ Submit button
 - ✅ Result display on same page
 - ✅ Error handling
 - ✅ Single Page Application (SPA) fetch updates
