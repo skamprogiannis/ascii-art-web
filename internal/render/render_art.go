@@ -3,6 +3,7 @@ package render
 
 import (
 	"fmt"
+	"html"
 	"io"
 	"strings"
 
@@ -75,6 +76,66 @@ func printLineColor(w io.Writer, text string, banner []string, colorStr string, 
 					sb.WriteString(colorValue.Code)
 					sb.WriteString(charLine)
 					sb.WriteString(resetCode)
+				} else {
+					sb.WriteString(charLine)
+				}
+			}
+		}
+		fmt.Fprintln(w, sb.String())
+	}
+}
+
+// RenderArtHTML writes ASCII art as HTML, wrapping colored characters in <span> tags.
+// Characters not in colorSubstr (or all characters when colorSubstr is empty) receive the span.
+// If colorStr is empty the output is plain text (no spans).
+func RenderArtHTML(w io.Writer, input string, banner []string, colorStr string, colorSubstr string) {
+	if input == "" {
+		return
+	}
+
+	if strings.Trim(input, "\n") == "" {
+		count := strings.Count(input, "\n")
+		for i := 0; i < count; i++ {
+			fmt.Fprintln(w)
+		}
+		return
+	}
+
+	lines := strings.Split(input, "\n")
+	for _, line := range lines {
+		if line == "" {
+			fmt.Fprintln(w)
+		} else if colorStr == "" {
+			printLine(w, line, banner)
+		} else {
+			printLineHTML(w, line, banner, colorStr, colorSubstr)
+		}
+	}
+}
+
+// printLineHTML renders one logical line as 8 rows of ASCII art with HTML <span> coloring.
+func printLineHTML(w io.Writer, text string, banner []string, colorStr string, colorSubstr string) {
+	_, err := color.ParseColor(colorStr)
+	if err != nil {
+		printLine(w, text, banner)
+		return
+	}
+
+	safeColor := html.EscapeString(colorStr)
+	coloredIndices := findColoredCharIndices(text, colorSubstr)
+
+	for row := 0; row < 8; row++ {
+		var sb strings.Builder
+		for i, char := range text {
+			index := int(char-32)*9 + 1 + row
+			if index >= 0 && index < len(banner) {
+				charLine := html.EscapeString(banner[index])
+				if coloredIndices[i] {
+					sb.WriteString(`<span style="color:`)
+					sb.WriteString(safeColor)
+					sb.WriteString(`">`)
+					sb.WriteString(charLine)
+					sb.WriteString(`</span>`)
 				} else {
 					sb.WriteString(charLine)
 				}

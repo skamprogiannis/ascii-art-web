@@ -41,6 +41,31 @@ func RenderString(input string, opts Options) (string, error) {
 	return buf.String(), nil
 }
 
+// RenderStringHTML converts input text into ASCII art and returns it as an HTML string
+// with <span> tags wrapping colored characters. Safe to inject into a template as template.HTML.
+func RenderStringHTML(input string, opts Options) (string, error) {
+	if input == "" {
+		return "", nil
+	}
+
+	bannerName := opts.Banner
+	if bannerName == "" {
+		bannerName = "standard"
+	}
+	if !hasTxtSuffix(bannerName) {
+		bannerName += ".txt"
+	}
+
+	bannerData, err := banner.LoadBanner("banners/" + bannerName)
+	if err != nil {
+		return "", err
+	}
+
+	var buf bytes.Buffer
+	render.RenderArtHTML(&buf, input, bannerData, opts.Color, opts.Substr)
+	return buf.String(), nil
+}
+
 // hasTxtSuffix checks whether the provided filename ends with the ".txt" extension.
 func hasTxtSuffix(name string) bool {
 	if len(name) < 4 {
