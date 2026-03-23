@@ -44,6 +44,13 @@ CGO_ENABLED=0 go run .
 - Proper HTTP status code handling (200, 400, 404, 500)
 - Strict ASCII range validation (32-126) for secure input
 
+### Security Measures
+
+- **DoS Protection**: Strict 1000-character payload limit on the backend to prevent CPU and memory exhaustion.
+- **Slowloris Mitigation**: Custom `http.Server` configured with strict 10-second read/write timeouts.
+- **Path Traversal Prevention**: Hardcoded whitelisting for banner file selection (blocks `../../` injections).
+- **XSS Prevention**: Safe HTML escaping using Go's `html/template` package.
+
 ## Implementation Details
 
 ### Algorithm

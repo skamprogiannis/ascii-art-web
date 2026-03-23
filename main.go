@@ -15,12 +15,12 @@ import (
 
 // PageData represents the data structure passed to the HTML template for rendering.
 type PageData struct {
-	AsciiArt  template.HTML
-	InputText string
-	Banner    string
-	Color     string
-	Substr    string
-	Error     string
+	AsciiArt  template.HTML // The generated ASCII art (safe HTML)
+	InputText string        // The original text submitted by the user
+	Banner    string        // The selected banner style (standard, shadow, thinkertoy)
+	Color     string        // The requested color (hex, rgb, or name)
+	Substr    string        // The specific substring to color
+	Error     string        // Any error message to display to the user
 }
 
 // tmpl holds the parsed HTML templates.
@@ -56,6 +56,7 @@ func asciiArtHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Parse the incoming form data from the POST request body
 	if err := r.ParseForm(); err != nil {
 		http.Error(w, "400 Bad Request", http.StatusBadRequest)
 		return
@@ -68,19 +69,30 @@ func asciiArtHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Prevent Denial of Service (DoS) by enforcing a strict length limit
 	if len(text) > 1000 {
-		http.Error(w, "400 Bad Request", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		_ = tmpl.Execute(w, PageData{
+			Banner: "standard",
+			Error:  "Nice try, hacker! 🕵️‍♂️ Did you really think you could crash the server by modifying the HTML limits? My backend is bulletproof! 🛡️ (Max 1000 characters)",
+		})
 		return
 	}
 
+	// Extract remaining form values
 	banner := r.FormValue("banner")
 	colorVal := r.FormValue("color")
 	substr := r.FormValue("substr")
 
+	// Strict banner validation to prevent Path Traversal attacks (e.g., banner=../../../etc/passwd)
 	if banner != "standard" && banner != "shadow" && banner != "thinkertoy" {
-		http.Error(w, "400 Bad Request", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		_ = tmpl.Execute(w, PageData{
+			Banner: "standard",
+			Error:  "Hold on! 🛑 That banner doesn't exist. Trying to inject some path traversal? Not today! 🚫",
+		})
 		return
 	}
 
+	// Initialize the data payload with the user's input state
 	data := PageData{InputText: text, Banner: banner, Color: colorVal, Substr: substr}
 
 	// Validate that text only contains printable ASCII characters and newlines
@@ -93,6 +105,7 @@ func asciiArtHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// If the text is valid and not empty, generate the stylized ASCII art
 	if text != "" {
 		art, err := asciiart.RenderStringHTML(text, asciiart.Options{Banner: banner, Color: colorVal, Substr: substr})
 		if err != nil {
@@ -103,6 +116,7 @@ func asciiArtHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// Render the HTML template, injecting the generated art or any error messages
 	if err := tmpl.Execute(w, data); err != nil {
 		http.Error(w, "500 Internal Server Error", http.StatusInternalServerError)
 	}
@@ -110,10 +124,12 @@ func asciiArtHandler(w http.ResponseWriter, r *http.Request) {
 
 // main starts the HTTP server on port 8080 and registers the application's route handlers.
 func main() {
+	// Serve static assets (like CSS) from the /static/ directory
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	http.HandleFunc("/", homeHandler)
 	http.HandleFunc("/ascii-art", asciiArtHandler)
 
+	// Configure a robust HTTP server with strict timeouts to prevent Slowloris connection attacks
 	srv := &http.Server{
 		Addr:         ":8080",
 		ReadTimeout:  10 * time.Second,

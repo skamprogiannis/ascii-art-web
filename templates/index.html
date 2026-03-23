@@ -234,6 +234,7 @@ o--o</pre>
             {{end}}
         {{else}}
             <div class="output-empty">
+                <div class="output-empty-icon" aria-hidden="true">⌨</div>
                 <p>Your ASCII art will appear here</p>
             </div>
         {{end}}
@@ -307,17 +308,33 @@ o--o</pre>
         const warning = document.getElementById('empty-warning');
         const form = document.getElementById('art-form');
         const outputPanel = document.querySelector('.panel-output');
+        let fetchAbortController = null; // Tracks active network requests
 
         form.addEventListener('submit', async e => {
             if (!textarea.value.trim()) {
                 e.preventDefault();
                 warning.classList.add('visible');
                 textarea.focus();
+                
+                // Cancel any pending fetches
+                if (fetchAbortController) fetchAbortController.abort();
+                
+                // Revert to empty state immediately
+                outputPanel.innerHTML = `
+                <div class="output-empty">
+                    <div class="output-empty-icon" aria-hidden="true">⌨</div>
+                    <p>Your ASCII art will appear here</p>
+                </div>`;
                 return;
             }
             e.preventDefault(); // Stop normal page reload!
             warning.classList.remove('visible');
             outputPanel.style.opacity = '0.5'; // Visual feedback that it's processing
+
+            // Cancel previous fetch if user types something new quickly
+            if (fetchAbortController) fetchAbortController.abort();
+            const currentController = new AbortController();
+            fetchAbortController = currentController;
 
             try {
                 // ── Magic Auto-Wrapper (Prevents horizontal scrolling) ──
@@ -356,7 +373,11 @@ o--o</pre>
                 const isLight = oldArt && oldArt.classList.contains('canvas-light');
 
                 // Interactive Design: Fetch data asynchronously
-                const response = await fetch(form.action, { method: form.method, body: new URLSearchParams(formData) });
+                const response = await fetch(form.action, { 
+                    method: form.method, 
+                    body: new URLSearchParams(formData),
+                    signal: currentController.signal 
+                });
                 const html = await response.text();
                 
                 // Parse the new HTML and extract just the output section
@@ -371,9 +392,13 @@ o--o</pre>
                     if (newArt) { newArt.classList.remove('canvas-dark'); newArt.classList.add('canvas-light'); }
                 }
             } catch (err) {
+                if (err.name === 'AbortError') return; // Ignore aborted requests silently
                 console.error("Failed to generate art:", err);
             } finally {
-                outputPanel.style.opacity = '1';
+                // Only reset opacity if this is still the active request
+                if (!currentController.signal.aborted) {
+                    outputPanel.style.opacity = '1';
+                }
             }
         });
 
@@ -383,7 +408,17 @@ o--o</pre>
             warning.classList.remove('visible');
             clearTimeout(typingTimer); // Clear the timer if the user keeps typing
             // Wait 500ms after the user stops typing before auto-submitting
-            if (textarea.value.trim()) typingTimer = setTimeout(() => form.requestSubmit(), 500);
+            if (textarea.value.trim()) {
+                typingTimer = setTimeout(() => form.requestSubmit(), 500);
+            } else {
+                // Input is empty: cancel fetches and revert to empty state
+                if (fetchAbortController) fetchAbortController.abort();
+                outputPanel.innerHTML = `
+                <div class="output-empty">
+                    <div class="output-empty-icon" aria-hidden="true">⌨</div>
+                    <p>Your ASCII art will appear here</p>
+                </div>`;
+            }
         });
 
         // ── Auto-color Substring (Debounce) ──
