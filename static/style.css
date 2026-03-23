@@ -38,6 +38,17 @@ body {
     overflow-x: hidden;
 }
 
+/* Matrix Canvas */
+#matrix-bg {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 0;
+    opacity: 0.12; /* Subtle enough not to distract */
+    pointer-events: none;
+}
+
 /* Ambient blobs */
 body::before, body::after {
     content: "";
@@ -58,7 +69,7 @@ body::after {
     bottom: -120px; right: -120px;
 }
 
-header, main, footer { position: relative; z-index: 1; }
+header, .layout, footer { position: relative; z-index: 1; }
 
 /* ── Header ── */
 header {

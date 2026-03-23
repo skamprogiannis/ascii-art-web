@@ -39,12 +39,10 @@
         .panel {
             overflow-y: auto;
             height: 100%;
-            background: var(--surface);
+            background: #0c111f; /* Solid dark color to block the background */
             border: 1px solid var(--border);
             border-radius: var(--r-lg);
             padding: 1.5rem;
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
             box-shadow: 0 12px 40px rgba(0,0,0,0.4);
         }
         
@@ -111,6 +109,8 @@
     </style>
 </head>
 <body>
+    <canvas id="matrix-bg"></canvas>
+
     <header>
         <div class="logo-icon" aria-hidden="true">⌨</div>
         <h1>ASCII Art Generator</h1>
@@ -468,6 +468,40 @@ o--o</pre>
             }
         }
         bindOutputEvents(); // Bind on initial load
+
+        // ── Matrix Background Animation ──
+        const canvas = document.getElementById('matrix-bg');
+        const ctx = canvas.getContext('2d');
+
+        let width, height, columns, drops;
+        const fontSize = 14;
+        const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$+-*/=%""\'#&_(),.;:?!\\|{}<>[]^~';
+
+        function initMatrix() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            columns = Math.floor(width / fontSize);
+            drops = [];
+            for(let x = 0; x < columns; x++) drops[x] = 1;
+        }
+
+        function drawMatrix() {
+            // Use the same dark background color (rgba(8, 11, 20)) to fade the trails smoothly
+            ctx.fillStyle = 'rgba(8, 11, 20, 0.1)';
+            ctx.fillRect(0, 0, width, height);
+            ctx.fillStyle = '#0f0'; // Classic Matrix Green
+            ctx.font = fontSize + 'px monospace';
+            for(let i = 0; i < drops.length; i++) {
+                const text = letters.charAt(Math.floor(Math.random() * letters.length));
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                if(drops[i] * fontSize > height && Math.random() > 0.975) drops[i] = 0;
+                drops[i]++;
+            }
+        }
+
+        initMatrix();
+        setInterval(drawMatrix, 50); // Run at 20fps
+        window.addEventListener('resize', initMatrix); // Recalculate on window resize
     })();
     </script>
 </body>
