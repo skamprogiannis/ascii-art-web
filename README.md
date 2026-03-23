@@ -38,6 +38,7 @@ CGO_ENABLED=0 go run .
 - Live typing (debounced auto-generation)
 - Three banner styles: standard, shadow, thinkertoy
 - Real-time result display on the same page
+- Color picker and substring coloring support
 - Dark/Light mode canvas toggle
 - Download generated art as `.txt` file
 - Proper HTTP status code handling (200, 400, 404, 500)
