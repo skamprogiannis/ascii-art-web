@@ -1,0 +1,170 @@
+/* Layout and page-level behavior for the interactive split view */
+body {
+    margin: 0;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding: 2rem 1.5rem 1.5rem !important;
+}
+
+header {
+    flex-shrink: 0;
+    margin-bottom: 1.5rem !important;
+}
+
+.layout {
+    flex: 1;
+    overflow: hidden;
+    min-height: 0;
+    display: flex;
+    flex-direction: row;
+    gap: 1.5rem;
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.panel {
+    overflow-y: auto;
+    height: 100%;
+    background: #0c111f;
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: 1.5rem;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(139, 92, 246, 0.4);
+}
+
+.panel-form {
+    flex: 0 0 380px;
+}
+
+.panel-output {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    transition: opacity 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.panel-output > * {
+    animation: fadeIn 0.4s ease-out;
+}
+
+.output-empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    border: 2px dashed rgba(255, 255, 255, 0.1);
+    border-radius: var(--r);
+    background: rgba(0, 0, 0, 0.2);
+    min-height: 200px;
+}
+
+@keyframes float {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-8px);
+    }
+}
+
+.output-empty-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    opacity: 0.5;
+    animation: float 3s ease-in-out infinite;
+}
+
+.output-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.canvas-dark {
+    background-color: #121212 !important;
+    color: #f8f8f2;
+}
+
+.canvas-light {
+    background-color: #f9fafb !important;
+    color: #111827;
+}
+
+.pre-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+#art-output {
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    overflow: auto;
+    transition: background-color 0.3s, color 0.3s;
+    flex: 1;
+}
+
+footer {
+    margin-top: 1rem !important;
+    flex-shrink: 0;
+    width: 100%;
+    text-align: center;
+}
+
+@media (max-width: 860px) {
+    body {
+        padding: 1rem !important;
+    }
+
+    .layout {
+        flex-direction: column;
+        flex-wrap: nowrap;
+        gap: 1rem;
+    }
+
+    .panel-form {
+        flex: 0 0 auto;
+        height: auto;
+    }
+
+    .panel-output {
+        flex: 1 1 300px;
+    }
+}
