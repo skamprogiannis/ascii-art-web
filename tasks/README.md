@@ -2,7 +2,7 @@
 
 ## Overview
 
-22 tasks that build ASCII-Art-Web using **modular architecture** and **strict TDD**. Each task creates testable components following Go best practices.
+24 tasks that build ASCII-Art-Web using **modular architecture** and **strict TDD**. Each task creates testable components following Go best practices.
 
 ## Critical Rules
 
@@ -61,8 +61,10 @@ Tasks contain:
 | 20   | Web Templates            | HTML GUI integration             | 45min |
 | 21   | Web UX & Validation      | SPA, UI Polish, ASCII Check      | 45min |
 | 22   | Auto-Layout & Cleanup    | Responsive wrap, remove buttons  | 30min |
+| 23   | JSON API Negotiation     | Structured `/ascii-art` responses | 60min |
+| 24   | Frontend JSON + Docs     | JSON UI flow, tests, docs polish | 60min |
 
-**Total Time:** ~8.25 hours  
+**Total Time:** ~10.25 hours  
 **Total Tests:** 30 golden tests + color extensions + unit tests
 
 ## File Structure (Final)
@@ -197,7 +199,7 @@ cd test && go test -v -run TestTask01  # GREEN
 
 Project is complete when:
 
-- [ ] All 22 tasks marked DONE
+- [ ] All 24 tasks marked DONE
 - [ ] All 30 golden tests pass
 - [ ] All unit tests pass
 - [ ] `go build` succeeds

@@ -719,3 +719,60 @@ Refine the application layout to support fully automatic interactions, vertical 
 3. ✅ Removed the manual "Generate" button, as live-typing and color-picking render it obsolete.
 4. ✅ Cleaned up unused CSS classes (`.btn-generate`, `.btn-spinner`) from `style.css`.
 5. ✅ Updated documentation (`README.md`, `VERIFICATION.md`) to reflect the removal of the submit button.
+
+---
+
+## Phase 7: JSON API Responses & Frontend Reliability
+
+**Start Date:** 2026-03-24  
+**Branch:** skamprog  
+**Approach:** Content Negotiation + Frontend Refactor + Test Coverage  
+**Goal:** Provide structured JSON responses on `/ascii-art`, improve UI reliability, and keep HTML mode fully compatible.
+
+---
+
+## TASK-23: JSON API Content Negotiation ✅ COMPLETED
+
+**Agent:** copilot-cli | **LLM:** GPT-5.3-Codex
+
+### Objective
+Add JSON response support to `POST /ascii-art` via `Accept: application/json` without introducing a separate endpoint.
+
+### Implementation Steps
+1. ✅ Added shared request parsing/validation helpers in `main.go`.
+2. ✅ Implemented content negotiation and JSON serialization helpers.
+3. ✅ Added structured `APIResponse` payload for success and error cases.
+4. ✅ Added `asciiart.RenderBundle` to generate plain + HTML art in one path.
+5. ✅ Replaced `template.Must` startup behavior with recoverable template error handling (`tmplErr`).
+
+### Files Modified
+- `main.go`
+- `asciiart/asciiart.go`
+
+---
+
+## TASK-24: Frontend JSON Flow, UI Cleanup & Docs ✅ COMPLETED
+
+**Agent:** copilot-cli | **LLM:** GPT-5.3-Codex
+
+### Objective
+Consume JSON responses in the frontend, improve maintainability, add the requested Download icon, and document/test the changes.
+
+### Implementation Steps
+1. ✅ Switched frontend fetch flow to request JSON and render from payload directly.
+2. ✅ Removed brittle HTML response parsing in JavaScript.
+3. ✅ Aligned UI limit with backend validation (`1000` chars).
+4. ✅ Added Download button icon (`📥 Download`).
+5. ✅ Extracted inline template assets into `static/layout.css` and `static/app.js`.
+6. ✅ Added HTTP handler tests for JSON/HTML behavior and status paths.
+7. ✅ Updated README with JSON usage examples and response field documentation.
+8. ✅ Verified with `CGO_ENABLED=0 go test ./...`.
+
+### Files Modified
+- `templates/index.html`
+- `static/layout.css` (new)
+- `static/app.js` (new)
+- `main_test.go` (new)
+- `README.md`
+
+---
