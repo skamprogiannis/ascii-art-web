@@ -336,3 +336,22 @@ Before submitting code, verify:
 - [ ] Code formatted with `gofmt -d .`
 - [ ] Error handling is consistent (prefer `error` returns over `bool`)
 - [ ] Can be understood by a Go programmer
+
+## 13. Tasks & AI Log Maintenance (Mandatory)
+
+When a feature/fix is completed, keep project tracking docs in sync:
+
+1. Update `tasks/`:
+   - Add or update `tasks/TASK-XX.md` using the existing repository format.
+   - Include: **Status**, **Objective**, **Requirements/Steps**, and **Acceptance Criteria**.
+   - Mark completed items with checked boxes (`[x]`) and `Status: COMPLETED`.
+
+2. Update `tasks/README.md`:
+   - Add the new task(s) to the task table in execution order.
+   - Keep total task count/time summaries accurate.
+   - Keep completion criteria text aligned with the current number of tasks.
+
+3. Update `docs/AI_LOG.md`:
+   - Append a new phase/task entry (do not rewrite history).
+   - Follow existing style: **Phase header**, `TASK-XX` section, objective, implementation steps, and files modified.
+   - Record branch and high-level validation outcome (tests/manual checks).
