@@ -776,3 +776,25 @@ Consume JSON responses in the frontend, improve maintainability, add the request
 - `README.md`
 
 ---
+
+## TASK-25: Restore Explicit Form Submit Button ✅ COMPLETED
+
+**Agent:** copilot-cli | **LLM:** GPT-5.3-Codex
+
+### Objective
+Restore an explicit Generate button in the form to directly satisfy the project requirement: **"a button that sends a POST request to `/ascii-art`."**
+
+### Implementation Steps
+1. ✅ Added a visible `type="submit"` Generate button at the bottom of the left form card.
+2. ✅ Added `.generate-btn` styling in `static/style.css` consistent with the existing UI.
+3. ✅ Kept existing interactive behavior while preserving standard HTML form submission semantics.
+4. ✅ Verified behavior and re-ran tests.
+
+### Files Modified
+- `templates/index.html`
+- `static/style.css`
+
+### Validation
+- `CGO_ENABLED=0 go test ./...` ✅
+
+---

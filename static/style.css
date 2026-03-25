@@ -350,6 +350,38 @@ input[type="color"] {
 
 .empty-warning.visible { display: flex; }
 
+/* ── Primary submit button ── */
+.generate-btn {
+    width: 100%;
+    border: 1px solid transparent;
+    border-radius: var(--r);
+    padding: 0.72rem 0.95rem;
+    margin-top: 0.3rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    color: #fff;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    cursor: pointer;
+    transition: transform 0.15s var(--ease), box-shadow 0.18s var(--ease), filter 0.18s var(--ease);
+    box-shadow: 0 10px 24px rgba(139, 92, 246, 0.25);
+}
+
+.generate-btn:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.05);
+    box-shadow: 0 14px 28px rgba(139, 92, 246, 0.32);
+}
+
+.generate-btn:active {
+    transform: translateY(0);
+}
+
+.generate-btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.22), 0 10px 24px rgba(139, 92, 246, 0.25);
+}
+
 /* ── Divider ── */
 .divider {
     border: none;
