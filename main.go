@@ -3,8 +3,11 @@
 package main
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"html/template"
+	"io/fs"
 	"log"
 	"net/http"
 	"strings"
@@ -23,12 +26,45 @@ type PageData struct {
 	Error     string        // Any error message to display to the user
 }
 
+// APIResponse defines the JSON response payload for /ascii-art when JSON is requested.
+type APIResponse struct {
+	InputText    string `json:"input_text"`
+	Banner       string `json:"banner"`
+	Color        string `json:"color"`
+	Substr       string `json:"substr"`
+	AsciiArt     string `json:"ascii_art"`
+	AsciiArtHTML string `json:"ascii_art_html"`
+	Error        string `json:"error"`
+}
+
+type asciiArtRequest struct {
+	Text   string
+	Banner string
+	Color  string
+	Substr string
+}
+
+const maxInputLength = 1000
+
+var allowedBanners = map[string]struct{}{
+	"standard":   {},
+	"shadow":     {},
+	"thinkertoy": {},
+}
+
 // tmpl holds the parsed HTML templates.
-var tmpl *template.Template
+var (
+	tmpl    *template.Template
+	tmplErr error
+)
 
 // init parses the HTML templates on startup to avoid parsing them on every request.
 func init() {
-	tmpl = template.Must(template.ParseFiles("templates/index.html"))
+	var err error
+	tmpl, err = template.ParseFiles("templates/index.html")
+	if err != nil {
+		tmplErr = err
+	}
 }
 
 // homeHandler serves the main index page. It handles GET requests to the root URL ("/").
@@ -42,10 +78,7 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "400 Bad Request", http.StatusBadRequest)
 		return
 	}
-	data := PageData{Banner: "standard"}
-	if err := tmpl.Execute(w, data); err != nil {
-		http.Error(w, "500 Internal Server Error", http.StatusInternalServerError)
-	}
+	renderPage(w, http.StatusOK, PageData{Banner: "standard"})
 }
 
 // asciiArtHandler processes form submissions to generate ASCII art.
@@ -56,70 +89,43 @@ func asciiArtHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Parse the incoming form data from the POST request body
-	if err := r.ParseForm(); err != nil {
-		http.Error(w, "400 Bad Request", http.StatusBadRequest)
+	req, err := parseASCIIArtRequest(r)
+	if err != nil {
+		respondError(w, r, http.StatusBadRequest, asciiArtRequest{Banner: "standard"}, "400 Bad Request")
 		return
 	}
 
-	// Normalize text: remove Windows carriage returns (\r)
-	rawText := r.FormValue("text")
-	text := strings.ReplaceAll(rawText, "\r\n", "\n")
-	text = strings.ReplaceAll(text, "\r", "")
+	if statusCode, msg := validateASCIIArtRequest(req); statusCode != http.StatusOK {
+		respondError(w, r, statusCode, req, msg)
+		return
+	}
 
-	// Prevent Denial of Service (DoS) by enforcing a strict length limit
-	if len(text) > 1000 {
-		w.WriteHeader(http.StatusBadRequest)
-		_ = tmpl.Execute(w, PageData{
-			Banner: "standard",
-			Error:  "Nice try, hacker! 🕵️‍♂️ Did you really think you could crash the server by modifying the HTML limits? My backend is bulletproof! 🛡️ (Max 1000 characters)",
+	pageData := toPageData(req)
+	apiData := toAPIResponse(req)
+
+	if req.Text != "" {
+		plainArt, htmlArt, renderErr := asciiart.RenderBundle(req.Text, asciiart.Options{
+			Banner: req.Banner,
+			Color:  req.Color,
+			Substr: req.Substr,
 		})
-		return
-	}
-
-	// Extract remaining form values
-	banner := r.FormValue("banner")
-	colorVal := r.FormValue("color")
-	substr := r.FormValue("substr")
-
-	// Strict banner validation to prevent Path Traversal attacks (e.g., banner=../../../etc/passwd)
-	if banner != "standard" && banner != "shadow" && banner != "thinkertoy" {
-		w.WriteHeader(http.StatusBadRequest)
-		_ = tmpl.Execute(w, PageData{
-			Banner: "standard",
-			Error:  "Hold on! 🛑 That banner doesn't exist. Trying to inject some path traversal? Not today! 🚫",
-		})
-		return
-	}
-
-	// Initialize the data payload with the user's input state
-	data := PageData{InputText: text, Banner: banner, Color: colorVal, Substr: substr}
-
-	// Validate that text only contains printable ASCII characters and newlines
-	for _, char := range text {
-		if (char < 32 || char > 126) && char != '\n' && char != '\r' {
-			w.WriteHeader(http.StatusBadRequest)
-			data.Error = "Invalid input: Only standard ASCII characters (32-126) are supported."
-			_ = tmpl.Execute(w, data)
+		if renderErr != nil {
+			statusCode, msg := classifyRenderError(renderErr)
+			respondError(w, r, statusCode, req, msg)
 			return
 		}
+
+		pageData.AsciiArt = template.HTML(htmlArt)
+		apiData.AsciiArt = plainArt
+		apiData.AsciiArtHTML = htmlArt
 	}
 
-	// If the text is valid and not empty, generate the stylized ASCII art
-	if text != "" {
-		art, err := asciiart.RenderStringHTML(text, asciiart.Options{Banner: banner, Color: colorVal, Substr: substr})
-		if err != nil {
-			data.Error = err.Error()
-			w.WriteHeader(http.StatusInternalServerError)
-		} else {
-			data.AsciiArt = template.HTML(art)
-		}
+	if wantsJSONResponse(r) {
+		writeJSON(w, http.StatusOK, apiData)
+		return
 	}
 
-	// Render the HTML template, injecting the generated art or any error messages
-	if err := tmpl.Execute(w, data); err != nil {
-		http.Error(w, "500 Internal Server Error", http.StatusInternalServerError)
-	}
+	renderPage(w, http.StatusOK, pageData)
 }
 
 // main starts the HTTP server on port 8080 and registers the application's route handlers.
@@ -140,5 +146,118 @@ func main() {
 	fmt.Println("Server starting on http://localhost:8080")
 	if err := srv.ListenAndServe(); err != nil {
 		log.Fatal("ListenAndServe: ", err)
+	}
+}
+
+func parseASCIIArtRequest(r *http.Request) (asciiArtRequest, error) {
+	if err := r.ParseForm(); err != nil {
+		return asciiArtRequest{}, err
+	}
+
+	banner := strings.ToLower(strings.TrimSpace(r.FormValue("banner")))
+	if banner == "" {
+		banner = "standard"
+	}
+
+	return asciiArtRequest{
+		Text:   normalizeText(r.FormValue("text")),
+		Banner: banner,
+		Color:  strings.TrimSpace(r.FormValue("color")),
+		Substr: r.FormValue("substr"),
+	}, nil
+}
+
+func normalizeText(text string) string {
+	normalized := strings.ReplaceAll(text, "\r\n", "\n")
+	return strings.ReplaceAll(normalized, "\r", "")
+}
+
+func validateASCIIArtRequest(req asciiArtRequest) (int, string) {
+	if _, ok := allowedBanners[req.Banner]; !ok {
+		return http.StatusBadRequest, "Invalid banner. Allowed values: standard, shadow, thinkertoy."
+	}
+
+	if len(req.Text) > maxInputLength {
+		return http.StatusBadRequest, fmt.Sprintf("Input too long: maximum %d characters.", maxInputLength)
+	}
+
+	for _, char := range req.Text {
+		if char == '\n' {
+			continue
+		}
+		if char < 32 || char > 126 {
+			return http.StatusBadRequest, "Invalid input: Only standard ASCII characters (32-126) are supported."
+		}
+	}
+
+	return http.StatusOK, ""
+}
+
+func classifyRenderError(err error) (int, string) {
+	if errors.Is(err, fs.ErrNotExist) {
+		return http.StatusNotFound, "404 Not Found"
+	}
+	return http.StatusInternalServerError, "500 Internal Server Error"
+}
+
+func toPageData(req asciiArtRequest) PageData {
+	return PageData{
+		InputText: req.Text,
+		Banner:    req.Banner,
+		Color:     req.Color,
+		Substr:    req.Substr,
+	}
+}
+
+func toAPIResponse(req asciiArtRequest) APIResponse {
+	return APIResponse{
+		InputText: req.Text,
+		Banner:    req.Banner,
+		Color:     req.Color,
+		Substr:    req.Substr,
+	}
+}
+
+func respondError(w http.ResponseWriter, r *http.Request, statusCode int, req asciiArtRequest, message string) {
+	if wantsJSONResponse(r) {
+		data := toAPIResponse(req)
+		data.Error = message
+		writeJSON(w, statusCode, data)
+		return
+	}
+
+	data := toPageData(req)
+	data.Error = message
+	renderPage(w, statusCode, data)
+}
+
+func wantsJSONResponse(r *http.Request) bool {
+	accept := strings.ToLower(r.Header.Get("Accept"))
+	return strings.Contains(accept, "application/json")
+}
+
+func writeJSON(w http.ResponseWriter, statusCode int, payload APIResponse) {
+	body, err := json.Marshal(payload)
+	if err != nil {
+		http.Error(w, "500 Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(statusCode)
+	_, _ = w.Write(body)
+}
+
+func renderPage(w http.ResponseWriter, statusCode int, data PageData) {
+	if tmplErr != nil || tmpl == nil {
+		http.Error(w, "404 Not Found", http.StatusNotFound)
+		return
+	}
+
+	if statusCode != http.StatusOK {
+		w.WriteHeader(statusCode)
+	}
+	if err := tmpl.Execute(w, data); err != nil {
+		http.Error(w, "500 Internal Server Error", http.StatusInternalServerError)
 	}
 }

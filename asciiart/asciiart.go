@@ -22,16 +22,7 @@ func RenderString(input string, opts Options) (string, error) {
 		return "", nil
 	}
 
-	bannerName := opts.Banner
-	if bannerName == "" {
-		bannerName = "standard"
-	}
-
-	if bannerName != "" && !hasTxtSuffix(bannerName) {
-		bannerName += ".txt"
-	}
-
-	bannerData, err := banner.LoadBanner("banners/" + bannerName)
+	bannerData, err := loadBannerData(opts.Banner)
 	if err != nil {
 		return "", err
 	}
@@ -48,15 +39,7 @@ func RenderStringHTML(input string, opts Options) (string, error) {
 		return "", nil
 	}
 
-	bannerName := opts.Banner
-	if bannerName == "" {
-		bannerName = "standard"
-	}
-	if !hasTxtSuffix(bannerName) {
-		bannerName += ".txt"
-	}
-
-	bannerData, err := banner.LoadBanner("banners/" + bannerName)
+	bannerData, err := loadBannerData(opts.Banner)
 	if err != nil {
 		return "", err
 	}
@@ -64,6 +47,38 @@ func RenderStringHTML(input string, opts Options) (string, error) {
 	var buf bytes.Buffer
 	render.RenderArtHTML(&buf, input, bannerData, opts.Color, opts.Substr)
 	return buf.String(), nil
+}
+
+// RenderBundle converts input into both plain ASCII art text and HTML-formatted ASCII art
+// using a single banner file read.
+func RenderBundle(input string, opts Options) (string, string, error) {
+	if input == "" {
+		return "", "", nil
+	}
+
+	bannerData, err := loadBannerData(opts.Banner)
+	if err != nil {
+		return "", "", err
+	}
+
+	var plain bytes.Buffer
+	render.RenderArtColor(&plain, input, bannerData, "", "")
+
+	var html bytes.Buffer
+	render.RenderArtHTML(&html, input, bannerData, opts.Color, opts.Substr)
+
+	return plain.String(), html.String(), nil
+}
+
+func loadBannerData(bannerName string) ([]string, error) {
+	resolved := bannerName
+	if resolved == "" {
+		resolved = "standard"
+	}
+	if !hasTxtSuffix(resolved) {
+		resolved += ".txt"
+	}
+	return banner.LoadBanner("banners/" + resolved)
 }
 
 // hasTxtSuffix checks whether the provided filename ends with the ".txt" extension.
