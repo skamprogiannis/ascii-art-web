@@ -35,6 +35,7 @@ CGO_ENABLED=0 go run .
 
 - Web-based GUI for ASCII art generation
 - Single Page Application (SPA) experience using JavaScript `fetch`
+- JSON response mode on `POST /ascii-art` via `Accept: application/json`
 - Live typing (debounced auto-generation)
 - Three banner styles: standard, shadow, thinkertoy
 - Real-time result display on the same page
@@ -56,26 +57,47 @@ CGO_ENABLED=0 go run .
 ### Algorithm
 
 1. **HTTP Server Setup**: Server listens on port 8080 with two endpoints
-   - `GET /`: Serves the main HTML page with form
-   - `POST /ascii-art`: Processes form data and returns result
+    - `GET /`: Serves the main HTML page with form
+    - `POST /ascii-art`: Processes form data and returns HTML or JSON (content negotiation)
 
 2. **Request Processing**:
-   - Parse form data (text input and banner selection)
-   - Validate banner type (standard, shadow, thinkertoy)
-   - Return 400 Bad Request for invalid input
+    - Parse form data (text input and banner selection)
+    - Validate banner type (standard, shadow, thinkertoy)
+    - Validate input length and printable ASCII characters
+    - Return 400 Bad Request for invalid input
 
 3. **ASCII Art Generation**:
-   - Load selected banner file from `banners/` directory
+    - Load selected banner file from `banners/` directory
    - Each banner contains 8 lines per character (ASCII 32-126)
    - Calculate character position: `(ASCII_code - 32) * 9 + 1 + rowNumber`
    - Render each line by concatenating character art horizontally
    - Handle newlines (`\n`) by processing text in segments
 
 4. **Response Handling**:
-   - 200 OK: Successful generation
-   - 400 Bad Request: Invalid input or banner
-   - 404 Not Found: Invalid route or missing template
-   - 500 Internal Server Error: Template execution or rendering errors
+    - `Accept: application/json` → JSON payload with `ascii_art`, `ascii_art_html`, and `error`
+    - Other `Accept` values → HTML template response for browser rendering
+    - 200 OK: Successful generation
+    - 400 Bad Request: Invalid input or banner
+    - 404 Not Found: Invalid route or missing template/banner
+    - 500 Internal Server Error: Rendering or internal server errors
+
+### JSON Usage Example
+
+```bash
+curl -X POST "http://localhost:8080/ascii-art" \
+  -H "Accept: application/json" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  --data-urlencode "text=Hello" \
+  --data-urlencode "banner=standard" \
+  --data-urlencode "color=#8b5cf6" \
+  --data-urlencode "substr=He"
+```
+
+Example JSON fields:
+- `input_text`, `banner`, `color`, `substr`
+- `ascii_art` (plain text)
+- `ascii_art_html` (HTML with optional span coloring)
+- `error` (empty on success)
 
 ### Project Structure
 
@@ -83,6 +105,10 @@ CGO_ENABLED=0 go run .
 ascii-art-web/
 ├── templates/           # HTML templates
 │   └── index.html
+├── static/              # CSS and frontend JS assets
+│   ├── style.css
+│   ├── layout.css
+│   └── app.js
 ├── banners/            # Banner files
 │   ├── standard.txt
 │   ├── shadow.txt
