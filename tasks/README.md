@@ -64,8 +64,9 @@ Tasks contain:
 | 23   | JSON API Negotiation     | Structured `/ascii-art` responses | 60min |
 | 24   | Frontend JSON + Docs     | JSON UI flow, tests, docs polish | 60min |
 | 25   | Explicit Form Button     | Add required POST submit button   | 15min |
+| 26   | Generate Button Theme    | Match submit button to site UI    | 15min |
 
-**Total Time:** ~10.5 hours  
+**Total Time:** ~10.75 hours  
 **Total Tests:** 30 golden tests + color extensions + unit tests
 
 ## File Structure (Final)
@@ -200,7 +201,7 @@ cd test && go test -v -run TestTask01  # GREEN
 
 Project is complete when:
 
-- [ ] All 25 tasks marked DONE
+- [ ] All 26 tasks marked DONE
 - [ ] All 30 golden tests pass
 - [ ] All unit tests pass
 - [ ] `go build` succeeds

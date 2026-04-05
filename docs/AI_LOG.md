@@ -798,3 +798,24 @@ Restore an explicit Generate button in the form to directly satisfy the project 
 - `CGO_ENABLED=0 go test ./...` ✅
 
 ---
+
+## TASK-26: Align Generate Button with Site Theme ✅ COMPLETED
+
+**Agent:** copilot-cli | **LLM:** GPT-5.4
+
+### Objective
+Refine the explicit Generate button so it stays audit-compliant while visually matching the rest of the dark glassmorphism interface.
+
+### Implementation Steps
+1. ✅ Updated `.generate-btn` to use inherited typography and explicit full-width layout.
+2. ✅ Removed native browser button appearance for more consistent rendering across environments.
+3. ✅ Tuned border, background, shadow, and interactive states to match the surrounding panels and accent system.
+4. ✅ Re-ran validation after the styling change.
+
+### Files Modified
+- `static/style.css`
+
+### Validation
+- `CGO_ENABLED=0 go test ./...` ✅
+
+---
