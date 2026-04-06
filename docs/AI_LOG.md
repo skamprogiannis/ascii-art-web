@@ -844,3 +844,39 @@ Refine the explicit Generate button so it stays audit-compliant while visually m
 - `CGO_ENABLED=0 go test ./...` ✅
 
 ---
+
+## Phase 8: Docker Documentation & Audit Guidance
+
+**Start Date:** 2026-04-06
+**Branch:** artisanal
+**Approach:** Documentation polish and audit support.
+**Goal:** Document the manual Docker workflow clearly without relying on `docker.sh`.
+
+---
+
+## TASK-28: Docker Documentation & Manual Commands ✅ COMPLETED
+
+### Objective
+
+Document a clear manual Docker workflow in `README.md` and `docs/DOCKER.md` so the project can be audited without using the helper script.
+
+### Implementation Steps
+
+1. ✅ Added a concise Docker quick-start to `README.md`.
+2. ✅ Created `docs/DOCKER.md` with raw Docker commands for build, run, inspect, exec, stop, and cleanup.
+3. ✅ Explained that the trailing `.` in the build command provides the build context.
+4. ✅ Added project tracking updates for the Docker documentation task.
+
+### Files Modified
+
+- `README.md`
+- `docs/DOCKER.md`
+- `tasks/README.md`
+- `tasks/TASK-28.md`
+- `docs/AI_LOG.md`
+
+### Validation
+
+- Branch: `artisanal`
+- Manual validation: reviewed the documented commands against `Dockerfile` and `docker.sh`
+- Tests: not run because this change only updates documentation

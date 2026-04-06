@@ -66,8 +66,9 @@ Tasks contain:
 | 25   | Explicit Form Button     | Add required POST submit button   | 15min |
 | 26   | Generate Button Theme    | Match submit button to site UI    | 15min |
 | 27   | Internal Render Refactor | Decouple web from public package  | 15min |
+| 28   | Docker Docs              | Audit workflow                   | 15min |
 
-**Total Time:** ~11 hours  
+**Total Time:** ~11 hours 15 minutes  
 **Total Tests:** 30 golden tests + color extensions + unit tests
 
 ## File Structure (Final)
@@ -89,6 +90,7 @@ ascii-art/
 ├── go.mod
 ├── docs/
 │   ├── PRD.md
+│   ├── DOCKER.md
 │   ├── architecture.MD
 │   └── golden_tests.md
 ├── tasks/
@@ -202,7 +204,7 @@ cd test && go test -v -run TestTask01  # GREEN
 
 Project is complete when:
 
-- [ ] All 27 tasks marked DONE
+- [ ] All 28 tasks marked DONE
 - [ ] All 30 golden tests pass
 - [ ] All unit tests pass
 - [ ] `go build` succeeds

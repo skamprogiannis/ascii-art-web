@@ -31,6 +31,30 @@ CGO_ENABLED=0 go run .
 4. Open your browser and visit: `http://localhost:8080`
 5. Enter text, select a banner style, and click "Generate"
 
+### Docker
+
+You can build and run the project with plain Docker commands from the project root:
+
+```bash
+docker image build -t ascii-art-web-docker .
+docker container run -d -p 8080:8080 --name dockerize ascii-art-web-docker
+```
+
+The final `.` passes the current directory as the Docker build context.
+
+Useful follow-up commands:
+
+```bash
+docker images
+docker ps -a
+docker exec -it dockerize /bin/bash
+docker image inspect ascii-art-web-docker --format '{{json .Config.Labels}}'
+docker stop dockerize
+docker rm dockerize
+```
+
+For the full manual Docker workflow, see [`docs/DOCKER.md`](docs/DOCKER.md).
+
 ### Features
 
 - Web-based GUI for ASCII art generation
