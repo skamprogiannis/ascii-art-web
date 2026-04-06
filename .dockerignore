@@ -1,0 +1,10 @@
+.git
+.gitignore
+dist/
+*.log
+Dockerfile
+server
+docs/
+**/*.md
+tasks/
+asciiart/
