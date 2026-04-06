@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"ascii-art-web/asciiart"
+	"ascii-art-web/internal/generator"
 )
 
 // PageData represents the data structure passed to the HTML template for rendering.
@@ -104,7 +104,7 @@ func asciiArtHandler(w http.ResponseWriter, r *http.Request) {
 	apiData := toAPIResponse(req)
 
 	if req.Text != "" {
-		plainArt, htmlArt, renderErr := asciiart.RenderBundle(req.Text, asciiart.Options{
+		plainArt, htmlArt, renderErr := generator.RenderBundle(req.Text, generator.Options{
 			Banner: req.Banner,
 			Color:  req.Color,
 			Substr: req.Substr,

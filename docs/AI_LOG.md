@@ -799,6 +799,31 @@ Restore an explicit Generate button in the form to directly satisfy the project 
 
 ---
 
+## TASK-27: Decouple Web Server from Public asciiart Package ✅ COMPLETED
+
+**Agent:** copilot-cli | **LLM:** GPT-5.4
+
+### Objective
+Move shared render orchestration into an internal package so the web server can use internal application code directly, while keeping the public `asciiart` package as a wrapper API.
+
+### Implementation Steps
+1. ✅ Added `internal/generator` for shared banner-loading and plain/HTML render orchestration.
+2. ✅ Updated `main.go` to import the internal package directly instead of `asciiart`.
+3. ✅ Reduced `asciiart` to a thin wrapper over the shared internal implementation.
+4. ✅ Re-ran tests and validated the build path with `asciiart/` excluded from the source set copied for container builds.
+
+### Files Modified
+- `internal/generator/generator.go`
+- `main.go`
+- `asciiart/asciiart.go`
+
+### Validation
+- `CGO_ENABLED=0 go test ./...` ✅
+- `CGO_ENABLED=0 go build .` ✅
+- Temporary Docker-equivalent build context without `asciiart/` ✅
+
+---
+
 ## TASK-26: Align Generate Button with Site Theme ✅ COMPLETED
 
 **Agent:** copilot-cli | **LLM:** GPT-5.4
