@@ -17,8 +17,10 @@ FROM alpine:3.21
 LABEL org.opencontainers.image.title="ascii-art-web-dockerize" \
          org.opencontainers.image.description="ASCII-Art web server in Docker" \
          org.opencontainers.image.version="1.0.0" \
-         org.opencontainers.image.authors="your-names" Security: Run as a non-root user
+         org.opencontainers.image.authors="your-names" 
 
+
+# Security: Run as a non-root user
 RUN apk add --no-cache bash && adduser -D appuser
 
 WORKDIR /app
