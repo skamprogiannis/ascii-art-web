@@ -1,5 +1,5 @@
 # Stage 1 (builder):
-FROM golang:1.25-alpine AS builder
+FROM golang:alpine AS builder
 WORKDIR /app
 COPY go.mod go.sum* ./
 RUN go mod download
@@ -13,7 +13,7 @@ RUN CGO_ENABLED=0 GOOS=linux \
          .
 
 # Stage 2 (final image):
-FROM alpine:3.21
+FROM alpine:latest
 LABEL org.opencontainers.image.title="ascii-art-web-dockerize" \
          org.opencontainers.image.description="ASCII-Art web server in Docker" \
          org.opencontainers.image.version="1.0.0" \
