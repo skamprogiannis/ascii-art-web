@@ -55,6 +55,36 @@ docker rm dockerize
 
 For the full manual Docker workflow, see [`docs/DOCKER.md`](docs/DOCKER.md).
 
+## Testing
+
+### Unit Tests
+
+Run the unit tests for the web handlers:
+
+```bash
+go test .
+```
+
+### Docker Integration Tests
+
+Comprehensive integration tests for the Docker containerization:
+
+```bash
+# Run all Docker integration tests (handles permissions automatically)
+./run_docker_tests.sh
+
+# Or run directly (requires Docker permissions)
+./docker_integration_test.sh
+```
+
+These tests verify:
+- ✅ Docker build success
+- ✅ Best practices (linting, security)
+- ✅ Runtime health (container stays alive)
+- ✅ Port accessibility (web server responds)
+
+See [docs/DOCKER_INTEGRATION_TESTS.md](docs/DOCKER_INTEGRATION_TESTS.md) for detailed documentation.
+
 ### Features
 
 - Web-based GUI for ASCII art generation
