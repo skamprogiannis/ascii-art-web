@@ -90,12 +90,14 @@ See [docs/DOCKER_INTEGRATION_TESTS.md](docs/DOCKER_INTEGRATION_TESTS.md) for det
 - Web-based GUI for ASCII art generation
 - Single Page Application (SPA) experience using JavaScript `fetch`
 - JSON response mode on `POST /ascii-art` via `Accept: application/json`
+- Server-backed export downloads on `POST /export`
 - Live typing (debounced auto-generation)
 - Three banner styles: standard, shadow, thinkertoy
 - Real-time result display on the same page
 - Color picker and substring coloring support
 - Dark/Light mode canvas toggle
-- Download generated art as `.txt` file
+- Download generated art as `.txt`, `.html`, or `.json`
+- Explicit `Content-Type`, `Content-Length`, and `Content-Disposition` headers on generated responses and exports
 - Proper HTTP status code handling (200, 400, 404, 500)
 - Strict ASCII range validation (32-126) for secure input
 
@@ -110,9 +112,10 @@ See [docs/DOCKER_INTEGRATION_TESTS.md](docs/DOCKER_INTEGRATION_TESTS.md) for det
 
 ### Algorithm
 
-1. **HTTP Server Setup**: Server listens on port 8080 with two endpoints
+1. **HTTP Server Setup**: Server listens on port 8080 with three endpoints
     - `GET /`: Serves the main HTML page with form
     - `POST /ascii-art`: Processes form data and returns HTML or JSON (content negotiation)
+    - `POST /export`: Returns downloadable `.txt`, `.html`, or `.json` files
 
 2. **Request Processing**:
     - Parse form data (text input and banner selection)
@@ -122,14 +125,17 @@ See [docs/DOCKER_INTEGRATION_TESTS.md](docs/DOCKER_INTEGRATION_TESTS.md) for det
 
 3. **ASCII Art Generation**:
     - Load selected banner file from `banners/` directory
-   - Each banner contains 8 lines per character (ASCII 32-126)
-   - Calculate character position: `(ASCII_code - 32) * 9 + 1 + rowNumber`
-   - Render each line by concatenating character art horizontally
-   - Handle newlines (`\n`) by processing text in segments
+    - Each banner contains 8 lines per character (ASCII 32-126)
+    - Calculate character position: `(ASCII_code - 32) * 9 + 1 + rowNumber`
+    - Render each line by concatenating character art horizontally
+    - Handle newlines (`\n`) by processing text in segments
 
 4. **Response Handling**:
     - `Accept: application/json` → JSON payload with `ascii_art`, `ascii_art_html`, and `error`
     - Other `Accept` values → HTML template response for browser rendering
+    - `POST /export` → attachment download with `.txt`, `.html`, or `.json`
+    - HTML and JSON responses set explicit `Content-Length` headers
+    - Export responses set `Content-Type`, `Content-Length`, and `Content-Disposition`
     - 200 OK: Successful generation
     - 400 Bad Request: Invalid input or banner
     - 404 Not Found: Invalid route or missing template/banner
@@ -152,6 +158,30 @@ Example JSON fields:
 - `ascii_art` (plain text)
 - `ascii_art_html` (HTML with optional span coloring)
 - `error` (empty on success)
+
+### Export Usage Example
+
+```bash
+curl -X POST "http://localhost:8080/export" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  --data-urlencode "text=Hello" \
+  --data-urlencode "banner=standard" \
+  --data-urlencode "format=html" \
+  -OJ
+```
+
+Supported export formats:
+- `txt` → plain text ASCII art
+- `html` → downloadable HTML document with the rendered output
+- `json` → structured JSON payload containing both `ascii_art` and `ascii_art_html`
+
+### Download Headers Explained
+
+- `Content-Type` tells the client what kind of data the server is sending. Examples here include `text/plain`, `text/html`, and `application/json`.
+- `Content-Length` tells the client the exact response size in bytes. This helps browsers and tools know how much data to expect.
+- `Content-Disposition` tells the client that the response should be downloaded as a file and also provides the filename, such as `ascii-art.txt`.
+
+For exports, the project now uses all three headers together so auditors can verify the file type, byte size, and download filename from the HTTP response itself.
 
 ### Project Structure
 

@@ -465,6 +465,8 @@ input[type="color"] {
 
 .copy-btn:hover  { background: rgba(139,92,246,0.12); color: var(--text); border-color: var(--accent); }
 .copy-btn.copied { color: var(--success); border-color: rgba(52,211,153,0.4); background: rgba(52,211,153,0.08); }
+.copy-btn:disabled { cursor: wait; opacity: 0.7; }
+.export-format { min-width: 5.75rem; }
 
 /* ── Output block ──
    Dark enough background so ANY color is readable against it.

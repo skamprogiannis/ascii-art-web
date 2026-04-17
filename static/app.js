@@ -37,6 +37,43 @@
         .replaceAll('"', '&quot;')
         .replaceAll("'", '&#39;');
 
+    const parseDownloadFilename = (contentDisposition, fallbackName) => {
+        if (!contentDisposition) {
+            return fallbackName;
+        }
+
+        const utf8Match = contentDisposition.match(/filename\*\s*=\s*UTF-8''([^;]+)/i);
+        if (utf8Match && utf8Match[1]) {
+            return decodeURIComponent(utf8Match[1]);
+        }
+
+        const plainMatch = contentDisposition.match(/filename\s*=\s*"?(?<name>[^";]+)"?/i);
+        if (plainMatch && plainMatch.groups && plainMatch.groups.name) {
+            return plainMatch.groups.name;
+        }
+
+        return fallbackName;
+    };
+
+    const flashButtonState = (button, text, className = '') => {
+        if (!button) {
+            return;
+        }
+
+        const originalText = button.dataset.defaultLabel || button.textContent;
+        button.dataset.defaultLabel = originalText;
+        button.textContent = text;
+        if (className) {
+            button.classList.add(className);
+        }
+        setTimeout(() => {
+            button.textContent = originalText;
+            if (className) {
+                button.classList.remove(className);
+            }
+        }, 2000);
+    };
+
     const updateCounter = () => {
         const n = textarea.value.length;
         counter.textContent = `${n} / ${MAX_CHARS}`;
@@ -78,7 +115,12 @@
                     ${hasArt
                         ? `<span class="badge badge-success">✓ Generated</span>
                            <button class="copy-btn" id="copy-btn" type="button">⎘ Copy</button>
-                           <button class="copy-btn" id="download-btn" type="button" title="Download text file">📥 Download</button>`
+                           <select id="export-format" class="copy-btn export-format" aria-label="Export format">
+                               <option value="txt">TXT</option>
+                               <option value="html">HTML</option>
+                               <option value="json">JSON</option>
+                           </select>
+                           <button class="copy-btn" id="download-btn" type="button" title="Download exported file">📥 Export File</button>`
                         : `<span class="badge badge-error">✕ Error</span>`}
                 </div>
             </div>
@@ -112,15 +154,42 @@
 
         const downloadBtn = document.getElementById('download-btn');
         if (downloadBtn) {
-            downloadBtn.addEventListener('click', () => {
-                const text = getCurrentArtText();
-                const blob = new Blob([text], { type: 'text/plain' });
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = 'ascii-art.txt';
-                link.click();
-                URL.revokeObjectURL(url);
+            downloadBtn.addEventListener('click', async () => {
+                const exportFormat = document.getElementById('export-format');
+                const format = exportFormat ? exportFormat.value : 'txt';
+                const defaultFilename = `ascii-art.${format}`;
+
+                downloadBtn.disabled = true;
+
+                try {
+                    const formData = new FormData(form);
+                    formData.set('format', format);
+
+                    const response = await fetch('/export', {
+                        method: 'POST',
+                        body: new URLSearchParams(formData),
+                    });
+
+                    if (!response.ok) {
+                        const message = (await response.text()) || `${response.status} ${response.statusText}`;
+                        throw new Error(message);
+                    }
+
+                    const blob = await response.blob();
+                    const filename = parseDownloadFilename(response.headers.get('Content-Disposition'), defaultFilename);
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = filename;
+                    link.click();
+                    URL.revokeObjectURL(url);
+                    flashButtonState(downloadBtn, '✓ Exported!', 'copied');
+                } catch (err) {
+                    console.error('Failed to export art:', err);
+                    flashButtonState(downloadBtn, '✕ Export failed');
+                } finally {
+                    downloadBtn.disabled = false;
+                }
             });
         }
 

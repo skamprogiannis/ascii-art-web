@@ -880,3 +880,51 @@ Document a clear manual Docker workflow in `README.md` and `docs/DOCKER.md` so t
 - Branch: `artisanal`
 - Manual validation: reviewed the documented commands against `Dockerfile` and `docker.sh`
 - Tests: not run because this change only updates documentation
+
+---
+
+## Phase 9: Audit Export Headers & Multi-Format Downloads
+
+**Start Date:** 2026-04-17
+**Branch:** main
+**Approach:** Add a backend export path, explicit download headers, and user-facing audit documentation.
+**Goal:** Make exports audit-friendly with `.txt`, `.html`, and `.json` downloads backed by correct HTTP headers.
+
+---
+
+## TASK-29: Audit Export Headers & Multi-Format Downloads ✅ COMPLETED
+
+### Objective
+
+Add server-backed export downloads so the project satisfies audit checks for `Content-Type`, `Content-Length`, `Content-Disposition`, and multiple export formats.
+
+### Implementation Steps
+
+1. ✅ Added `POST /export` to generate downloadable files from the existing ASCII art render pipeline.
+2. ✅ Added `.txt`, `.html`, and `.json` export formats without introducing non-standard packages.
+3. ✅ Set explicit `Content-Type`, `Content-Length`, and `Content-Disposition` headers on export responses.
+4. ✅ Buffered HTML and JSON responses so the application now returns explicit `Content-Length` headers on rendered output.
+5. ✅ Updated the frontend output controls to choose an export format and download from the backend.
+6. ✅ Expanded `main_test.go` with export/header coverage and manually verified headers with `curl`.
+7. ✅ Updated the README and task tracking files for the completed audit work.
+
+### Files Modified
+
+- `main.go`
+- `main_test.go`
+- `templates/index.html`
+- `static/app.js`
+- `static/style.css`
+- `README.md`
+- `tasks/TASK-29.md`
+- `tasks/README.md`
+- `docs/AI_LOG.md`
+
+### Validation
+
+- Branch: `main`
+- `gofmt -w main.go main_test.go` ✅
+- `go test ./...` ✅
+- `node --check static/app.js` ✅
+- Manual header validation with `curl` on `/`, `/ascii-art`, and `/export` (`txt`, `html`, `json`) ✅
+- Docker integration tests rerun after implementation ✅

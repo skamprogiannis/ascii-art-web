@@ -2,13 +2,13 @@
 
 ## Overview
 
-24 tasks that build ASCII-Art-Web using **modular architecture** and **strict TDD**. Each task creates testable components following Go best practices.
+29 tasks that build ASCII-Art-Web using **modular architecture** and **strict TDD**. Each task creates testable components following Go best practices.
 
 ## Critical Rules
 
 ### 1. Sequential Execution
 
-Tasks MUST be completed in order (01 → 22). Each builds on previous tasks.
+Tasks MUST be completed in order (01 → 29). Each builds on previous tasks.
 
 ### 2. TDD Cycle (Mandatory)
 
@@ -67,8 +67,9 @@ Tasks contain:
 | 26   | Generate Button Theme    | Match submit button to site UI    | 15min |
 | 27   | Internal Render Refactor | Decouple web from public package  | 15min |
 | 28   | Docker Docs              | Audit workflow                   | 15min |
+| 29   | Export Downloads         | Audit headers + multi-format export | 60min |
 
-**Total Time:** ~11 hours 15 minutes  
+**Total Time:** ~12 hours 15 minutes  
 **Total Tests:** 30 golden tests + color extensions + unit tests
 
 ## File Structure (Final)
@@ -113,7 +114,7 @@ Before starting TASK-01:
 
 ### Step 2: Execute Each Task
 
-For each task (01-09):
+For each task (01-29):
 
 **1. Open task file:**
 
@@ -204,7 +205,7 @@ cd test && go test -v -run TestTask01  # GREEN
 
 Project is complete when:
 
-- [ ] All 28 tasks marked DONE
+- [ ] All 29 tasks marked DONE
 - [ ] All 30 golden tests pass
 - [ ] All unit tests pass
 - [ ] `go build` succeeds

@@ -120,7 +120,12 @@ o--o</pre>
                     {{if .AsciiArt}}
                         <span class="badge badge-success">✓ Generated</span>
                         <button class="copy-btn" id="copy-btn" type="button">⎘ Copy</button>
-                        <button class="copy-btn" id="download-btn" type="button" title="Download text file">📥 Download</button>
+                        <select id="export-format" class="copy-btn export-format" aria-label="Export format">
+                            <option value="txt">TXT</option>
+                            <option value="html">HTML</option>
+                            <option value="json">JSON</option>
+                        </select>
+                        <button class="copy-btn" id="download-btn" type="button" title="Download exported file">📥 Export File</button>
                     {{else}}
                         <span class="badge badge-error">✕ Error</span>
                     {{end}}
