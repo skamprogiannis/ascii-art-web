@@ -11,6 +11,7 @@ consume the same renderer as JSON, or download the result in three formats.
 - Whole-text or substring coloring with named, hex, RGB, and HSL colors
 - Responsive browser interface with debounced previews and an explicit submit
   action
+- Keyboard-accessible banner controls and reduced-motion support
 - HTML and JSON responses from the same `POST /ascii-art` endpoint
 - Server-generated `.txt`, `.html`, and `.json` downloads from `POST /export`
 - Explicit `Content-Type`, `Content-Length`, and `Content-Disposition` export

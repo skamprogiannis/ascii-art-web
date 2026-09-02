@@ -2,7 +2,7 @@
 
 ## Overview
 
-30 tasks that build and present ASCII-Art-Web using **modular architecture** and
+31 tasks that build and present ASCII-Art-Web using **modular architecture** and
 **strict TDD** for product behavior, followed by validated documentation and
 delivery work.
 
@@ -10,7 +10,7 @@ delivery work.
 
 ### 1. Sequential Execution
 
-Tasks MUST be completed in order (01 → 30). Each builds on previous tasks.
+Tasks MUST be completed in order (01 → 31). Each builds on previous tasks.
 
 ### 2. TDD Cycle (Mandatory)
 
@@ -71,8 +71,9 @@ Tasks contain:
 | 28   | Docker Docs              | Audit workflow                   | 15min |
 | 29   | Export Downloads         | Audit headers + multi-format export | 60min |
 | 30   | Portfolio Polish & CI    | Documentation + automated validation | 45min |
+| 31   | Responsive & A11y Polish | Mobile, keyboard + reduced motion     | 45min |
 
-**Total Time:** ~14 hours 25 minutes
+**Total Time:** ~15 hours 10 minutes
 **Total Tests:** 30 golden tests + color, handler, container, and unit tests
 
 ## File Structure (Final)
@@ -208,7 +209,7 @@ cd test && go test -v -run TestTask01  # GREEN
 
 Project is complete when:
 
-- [ ] All 30 tasks marked DONE
+- [ ] All 31 tasks marked DONE
 - [ ] All 30 golden tests pass
 - [ ] All unit tests pass
 - [ ] `go build` succeeds

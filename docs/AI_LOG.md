@@ -981,3 +981,65 @@ documentation and add continuous integration for the existing application.
 - `CGO_ENABLED=0 go build ./...` ✅
 - `node --check static/app.js` ✅
 - `./docker_integration_test.sh`: 4/4 checks passed; resources cleaned ✅
+
+---
+
+## Phase 11: Responsive & Accessibility Polish
+
+**Start Date:** 2026-09-02
+**Branch:** portfolio-main
+**Approach:** Bounded incumbent refinement with desktop/mobile evidence
+**Goal:** Make the complete generation and export path reachable by mobile and
+keyboard users without redesigning the established interface.
+
+---
+
+## TASK-31: Responsive & Accessibility Polish ✅ COMPLETED
+
+### Objective
+
+Resolve the mobile clipping and keyboard-access issues found during the final
+portfolio quality audit.
+
+### Implementation Steps
+
+1. ✅ Measured the initial 390×844 layout and confirmed that `overflow: hidden`
+   collapsed the output panel below the non-scrollable viewport.
+2. ✅ Made the narrow layout vertically scrollable, preserved natural panel
+   heights, and wrapped output actions within the available width.
+3. ✅ Restored native radio semantics and keyboard focus without changing the
+   visual banner-card pattern.
+4. ✅ Added focus-visible states for color and output controls, increased color
+   preset targets, and associated the color label with its text input.
+5. ✅ Added reduced-motion handling for continuous canvas and CSS animations.
+6. ✅ Removed global Enter-key interception, hid the non-functional background
+   button in error states, and added busy/copy-failure feedback.
+7. ✅ Removed duplicate font loading and redundant `!important` overrides.
+
+### Files Modified
+
+- `templates/index.html`
+- `static/app.js`
+- `static/style.css`
+- `static/layout.css`
+- `README.md`
+- `tasks/TASK-31.md`
+- `tasks/README.md`
+- `docs/AI_LOG.md`
+
+### Validation
+
+- Branch: `portfolio-main`
+- Desktop browser check at 1440×900 ✅
+- Mobile browser check at 390×844: document scroll and generated output reachability ✅
+- Accessibility snapshot: all three named banner radios exposed ✅
+- Generated output, action layout, empty state, and busy-state checks ✅
+- Browser console and uncaught JavaScript errors: none ✅
+- Impeccable detector run once across all changed UI targets: 0 errors, 3
+  incumbent-style warnings (Inter, single-font hierarchy, gradient heading) ✅
+- `node --check static/app.js` ✅
+- `go test -short ./...` ✅
+- `go test -race -short ./...` ✅
+- `go vet ./...` ✅
+- `CGO_ENABLED=0 go build ./...` ✅
+- `./docker_integration_test.sh`: 4/4 checks passed; resources cleaned ✅
