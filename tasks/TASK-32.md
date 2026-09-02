@@ -1,6 +1,6 @@
 # TASK-32: Restore CI Quality Gate
 
-**Status:** IN PROGRESS
+**Status:** COMPLETED
 **Priority:** P1 (High)
 **Dependencies:** TASK-30
 **Estimated Time:** 10 minutes
@@ -31,4 +31,4 @@ action runtimes reported by the runner.
 - [x] The Docker integration test has canonical indentation and a final newline.
 - [x] Local formatting, tests, vet, build, and JavaScript syntax checks pass.
 - [x] A replacement GitHub Actions run completes successfully.
-- [ ] The final workflow run has no deprecated action-runtime annotations.
+- [x] The final workflow run has no deprecated action-runtime annotations.
