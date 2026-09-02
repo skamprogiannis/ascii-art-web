@@ -1,215 +1,173 @@
-# ASCII-Art-Web
+# ASCII Art Web
 
-## Description
+ASCII Art Web is a standard-library Go application that turns text into
+browser-rendered ASCII art. It combines the Zone01 stylize, Dockerize, and
+export milestones in one final project: generate colored art interactively,
+consume the same renderer as JSON, or download the result in three formats.
 
-ASCII-Art-Web is a web application that converts text into ASCII art using different banner styles. Built with Go and standard library only, it provides a simple web interface to generate artistic text representations in three styles: standard, shadow, and thinkertoy.
+## Highlights
 
-## Authors
+- Three banner styles: `standard`, `shadow`, and `thinkertoy`
+- Whole-text or substring coloring with named, hex, RGB, and HSL colors
+- Responsive browser interface with debounced previews and an explicit submit
+  action
+- HTML and JSON responses from the same `POST /ascii-art` endpoint
+- Server-generated `.txt`, `.html`, and `.json` downloads from `POST /export`
+- Explicit `Content-Type`, `Content-Length`, and `Content-Disposition` export
+  headers
+- Multi-stage Docker image running as an unprivileged user
+- Standard-library backend with no third-party Go dependencies
 
-- [gelafros](https://platform.zone01.gr/git/gelafros/)
-- [skamprog](https://platform.zone01.gr/git/skamprog/)
-- [emanola](https://platform.zone01.gr/git/emanola/)
+## Architecture
 
-## Usage
+```text
+Browser or API client
+        |
+        v
+Go net/http routes: /, /ascii-art, /export
+        |
+        v
+Request validation and content negotiation
+        |
+        v
+internal/generator
+   |             |
+banner loader    plain/HTML renderer + color parser
+        |
+        v
+HTML page, JSON response, or downloadable file
+```
 
-### How to Run
+The web server in `main.go` owns routing, validation, response headers, and
+export serialization. `internal/generator` coordinates banner loading and the
+plain/HTML renderers. The `asciiart` package exposes the same generator through
+a small reusable Go API. Frontend behavior and styles live under `static/`,
+while `templates/index.html` retains a normal HTML form fallback.
 
-1. Ensure Go 1.21 or higher is installed
-2. Navigate to the project directory
-3. Run the server:
+## Run Locally
+
+Use the Go version declared in `go.mod`, then start the server from the project
+root so it can find the templates, static assets, and banners:
 
 ```bash
 go run .
 ```
 
-If your environment is missing a C compiler (`gcc`) and `go run .` fails with a cgo error, run:
+If the local environment has no C toolchain, disable cgo:
 
 ```bash
 CGO_ENABLED=0 go run .
 ```
 
-4. Open your browser and visit: `http://localhost:8080`
-5. Enter text, select a banner style, and click "Generate"
+Open <http://localhost:8080>.
 
 ### Docker
 
-You can build and run the project with plain Docker commands from the project root:
-
 ```bash
-docker image build -t ascii-art-web-docker .
-docker container run -d -p 8080:8080 --name dockerize ascii-art-web-docker
+docker image build -t ascii-art-web .
+docker container run --rm -p 8080:8080 --name ascii-art-web ascii-art-web
 ```
 
-The final `.` passes the current directory as the Docker build context.
+The container uses a multi-stage build and serves the application as a non-root
+user. See [Docker Guide](docs/DOCKER.md) for inspection and cleanup commands.
 
-Useful follow-up commands:
+## HTTP Interface
+
+### Generate JSON
+
+`POST /ascii-art` returns HTML by default. Request JSON through content
+negotiation:
 
 ```bash
-docker images
-docker ps -a
-docker exec -it dockerize /bin/bash
-docker image inspect ascii-art-web-docker --format '{{json .Config.Labels}}'
-docker stop dockerize
-docker rm dockerize
+curl -X POST http://localhost:8080/ascii-art \
+  -H 'Accept: application/json' \
+  -H 'Content-Type: application/x-www-form-urlencoded' \
+  --data-urlencode 'text=Hello' \
+  --data-urlencode 'banner=standard' \
+  --data-urlencode 'color=#8b5cf6' \
+  --data-urlencode 'substr=He'
 ```
 
-For the full manual Docker workflow, see [`docs/DOCKER.md`](docs/DOCKER.md).
+The JSON object contains the normalized request fields, plain `ascii_art`,
+colored `ascii_art_html`, and an `error` field.
 
-## Testing
-
-### Unit Tests
-
-Run the unit tests for the web handlers:
+### Export a File
 
 ```bash
-go test .
-```
-
-### Docker Integration Tests
-
-Comprehensive integration tests for the Docker containerization:
-
-```bash
-# Run all Docker integration tests (handles permissions automatically)
-./run_docker_tests.sh
-
-# Or run directly (requires Docker permissions)
-./docker_integration_test.sh
-```
-
-These tests verify:
-- ✅ Docker build success
-- ✅ Best practices (linting, security)
-- ✅ Runtime health (container stays alive)
-- ✅ Port accessibility (web server responds)
-
-See [docs/DOCKER_INTEGRATION_TESTS.md](docs/DOCKER_INTEGRATION_TESTS.md) for detailed documentation.
-
-### Features
-
-- Web-based GUI for ASCII art generation
-- Single Page Application (SPA) experience using JavaScript `fetch`
-- JSON response mode on `POST /ascii-art` via `Accept: application/json`
-- Server-backed export downloads on `POST /export`
-- Live typing (debounced auto-generation)
-- Three banner styles: standard, shadow, thinkertoy
-- Real-time result display on the same page
-- Color picker and substring coloring support
-- Dark/Light mode canvas toggle
-- Download generated art as `.txt`, `.html`, or `.json`
-- Explicit `Content-Type`, `Content-Length`, and `Content-Disposition` headers on generated responses and exports
-- Proper HTTP status code handling (200, 400, 404, 500)
-- Strict ASCII range validation (32-126) for secure input
-
-### Security Measures
-
-- **DoS Protection**: Strict 1000-character payload limit on the backend to prevent CPU and memory exhaustion.
-- **Slowloris Mitigation**: Custom `http.Server` configured with strict 10-second read/write timeouts.
-- **Path Traversal Prevention**: Hardcoded whitelisting for banner file selection (blocks `../../` injections).
-- **XSS Prevention**: Safe HTML escaping using Go's `html/template` package.
-
-## Implementation Details
-
-### Algorithm
-
-1. **HTTP Server Setup**: Server listens on port 8080 with three endpoints
-    - `GET /`: Serves the main HTML page with form
-    - `POST /ascii-art`: Processes form data and returns HTML or JSON (content negotiation)
-    - `POST /export`: Returns downloadable `.txt`, `.html`, or `.json` files
-
-2. **Request Processing**:
-    - Parse form data (text input and banner selection)
-    - Validate banner type (standard, shadow, thinkertoy)
-    - Validate input length and printable ASCII characters
-    - Return 400 Bad Request for invalid input
-
-3. **ASCII Art Generation**:
-    - Load selected banner file from `banners/` directory
-    - Each banner contains 8 lines per character (ASCII 32-126)
-    - Calculate character position: `(ASCII_code - 32) * 9 + 1 + rowNumber`
-    - Render each line by concatenating character art horizontally
-    - Handle newlines (`\n`) by processing text in segments
-
-4. **Response Handling**:
-    - `Accept: application/json` → JSON payload with `ascii_art`, `ascii_art_html`, and `error`
-    - Other `Accept` values → HTML template response for browser rendering
-    - `POST /export` → attachment download with `.txt`, `.html`, or `.json`
-    - HTML and JSON responses set explicit `Content-Length` headers
-    - Export responses set `Content-Type`, `Content-Length`, and `Content-Disposition`
-    - 200 OK: Successful generation
-    - 400 Bad Request: Invalid input or banner
-    - 404 Not Found: Invalid route or missing template/banner
-    - 500 Internal Server Error: Rendering or internal server errors
-
-### JSON Usage Example
-
-```bash
-curl -X POST "http://localhost:8080/ascii-art" \
-  -H "Accept: application/json" \
-  -H "Content-Type: application/x-www-form-urlencoded" \
-  --data-urlencode "text=Hello" \
-  --data-urlencode "banner=standard" \
-  --data-urlencode "color=#8b5cf6" \
-  --data-urlencode "substr=He"
-```
-
-Example JSON fields:
-- `input_text`, `banner`, `color`, `substr`
-- `ascii_art` (plain text)
-- `ascii_art_html` (HTML with optional span coloring)
-- `error` (empty on success)
-
-### Export Usage Example
-
-```bash
-curl -X POST "http://localhost:8080/export" \
-  -H "Content-Type: application/x-www-form-urlencoded" \
-  --data-urlencode "text=Hello" \
-  --data-urlencode "banner=standard" \
-  --data-urlencode "format=html" \
+curl -X POST http://localhost:8080/export \
+  -H 'Content-Type: application/x-www-form-urlencoded' \
+  --data-urlencode 'text=Hello' \
+  --data-urlencode 'banner=shadow' \
+  --data-urlencode 'format=html' \
   -OJ
 ```
 
-Supported export formats:
-- `txt` → plain text ASCII art
-- `html` → downloadable HTML document with the rendered output
-- `json` → structured JSON payload containing both `ascii_art` and `ascii_art_html`
+Supported formats:
 
-### Download Headers Explained
+| Format | Media type | Contents |
+| --- | --- | --- |
+| `txt` | `text/plain` | Plain ASCII art |
+| `html` | `text/html` | Standalone, styled HTML document |
+| `json` | `application/json` | Request metadata plus plain and HTML art |
 
-- `Content-Type` tells the client what kind of data the server is sending. Examples here include `text/plain`, `text/html`, and `application/json`.
-- `Content-Length` tells the client the exact response size in bytes. This helps browsers and tools know how much data to expect.
-- `Content-Disposition` tells the client that the response should be downloaded as a file and also provides the filename, such as `ascii-art.txt`.
+Omitting `format` defaults to `txt`.
 
-For exports, the project now uses all three headers together so auditors can verify the file type, byte size, and download filename from the HTTP response itself.
+## Test and Build
 
-### Project Structure
+Run the fast suite without Docker integration:
 
-```
-ascii-art-web/
-├── templates/           # HTML templates
-│   └── index.html
-├── static/              # CSS and frontend JS assets
-│   ├── style.css
-│   ├── layout.css
-│   └── app.js
-├── banners/            # Banner files
-│   ├── standard.txt
-│   ├── shadow.txt
-│   └── thinkertoy.txt
-├── asciiart/           # Public library
-│   └── asciiart.go
-├── internal/           # Internal packages
-│   ├── banner/
-│   ├── parser/
-│   └── render/
-├── main.go             # Server entry point
-└── go.mod              # Go module
+```bash
+go test -short ./...
+go test -race -short ./...
+go vet ./...
+CGO_ENABLED=0 go build ./...
+node --check static/app.js
 ```
 
-### Technical Stack
+When Docker is available, run the container build and HTTP smoke tests:
 
-- Language: Go (standard library only)
-- Server: net/http
-- Templating: html/template
-- Port: 8080
+```bash
+./docker_integration_test.sh
+```
+
+The integration script uses port `8081` and cleans up its test container and
+image. Additional testing details are in
+[Docker Integration Tests](docs/DOCKER_INTEGRATION_TESTS.md).
+
+## Security and Operational Limits
+
+- Banner names and export formats are selected from fixed allowlists.
+- Input is limited to 1,000 bytes and printable ASCII plus newlines.
+- User text is escaped for templates and HTML exports; colors must pass the
+  dedicated color parser before becoming style values.
+- The HTTP server sets read, write, and idle timeouts.
+- The runtime container drops root privileges.
+
+This remains an educational portfolio service, not an internet-facing security
+boundary. It does not provide TLS, authentication, rate limiting, or a custom
+whole-request body limit. A public deployment should add those controls at a
+trusted reverse proxy and run with resource limits.
+
+## Status
+
+This repository is the canonical final version, reconstructed from the team’s
+stylize, Dockerize, and export work while retaining original commit authorship.
+The project is feature-complete for its Zone01 audit scope and maintained as a
+portfolio demonstration rather than a general-purpose text rendering service.
+
+Design and requirement history remains available in
+[Architecture](docs/architecture.MD), [Product Requirements](docs/PRD.md), and
+the append-only [AI Implementation Log](docs/AI_LOG.md).
+
+## Team Contributions
+
+- **gelafros** — built the original web experience, rendering/color features,
+  request validation, and interactive frontend foundation.
+- **Stefanos Kamprogiannis (`skamprog`)** — added JSON content negotiation,
+  frontend API integration, explicit form submission, internal generator
+  boundaries, Docker support, and multi-format exports.
+- **emanola** — contributed container maintenance and the Docker integration
+  test suite.
+
+The Git history preserves the original author and committer metadata for each
+stage of the project.

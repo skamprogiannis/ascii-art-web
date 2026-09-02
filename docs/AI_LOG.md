@@ -928,3 +928,56 @@ Add server-backed export downloads so the project satisfies audit checks for `Co
 - `node --check static/app.js` ✅
 - Manual header validation with `curl` on `/`, `/ascii-art`, and `/export` (`txt`, `html`, `json`) ✅
 - Docker integration tests rerun after implementation ✅
+
+---
+
+## Phase 10: Portfolio Documentation & Continuous Integration
+
+**Start Date:** 2026-09-02
+**Branch:** portfolio-main
+**Approach:** Recruiter-facing documentation and automated delivery checks
+**Goal:** Present the reconstructed final project accurately and validate its Go,
+frontend, and container surfaces without changing application behavior.
+
+---
+
+## TASK-30: Portfolio Documentation & Continuous Integration ✅ COMPLETED
+
+### Objective
+
+Replace the assignment-oriented project overview with concise portfolio
+documentation and add continuous integration for the existing application.
+
+### Implementation Steps
+
+1. ✅ Reframed the project as the canonical combination of the stylize,
+   Dockerize, and export milestones.
+2. ✅ Documented features, architecture, run/test commands, HTTP and export
+   interfaces, security limits, project status, and contributor roles.
+3. ✅ Added a least-privilege GitHub Actions quality job for formatting, short
+   Go tests, coverage, the race detector, vet, build, and JavaScript syntax.
+4. ✅ Added a dependent container job that runs the existing Docker build and
+   HTTP smoke-test script.
+5. ✅ Updated the task index and total estimated project time.
+6. ✅ Preserved application/UI behavior, reconstructed history, and licensing
+   state.
+
+### Files Modified
+
+- `.github/workflows/ci.yml`
+- `README.md`
+- `tasks/TASK-30.md`
+- `tasks/README.md`
+- `docs/AI_LOG.md`
+
+### Validation
+
+- Branch: `portfolio-main`
+- `gofmt` cleanliness check ✅
+- `go test -count=1 -timeout 10m ./...` ✅
+- `go test -short -cover ./...` ✅
+- `go test -race -short ./...` ✅
+- `go vet ./...` ✅
+- `CGO_ENABLED=0 go build ./...` ✅
+- `node --check static/app.js` ✅
+- `./docker_integration_test.sh`: 4/4 checks passed; resources cleaned ✅
