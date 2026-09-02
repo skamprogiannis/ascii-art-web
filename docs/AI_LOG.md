@@ -1046,16 +1046,16 @@ portfolio quality audit.
 
 ---
 
-## Phase 12: CI Formatting Repair
+## Phase 12: CI Quality Gate Repair
 
 **Start Date:** 2026-09-03
 **Branch:** portfolio-main
-**Approach:** Reproduce the remote quality-gate failure and apply canonical formatting
-**Goal:** Restore a green GitHub Actions run without changing integration-test behavior.
+**Approach:** Reproduce the remote failure, apply canonical formatting, and clear runner deprecations
+**Goal:** Restore a clean GitHub Actions run without changing application or test behavior.
 
 ---
 
-## TASK-32: Restore CI Formatting Gate 🚧 IN PROGRESS
+## TASK-32: Restore CI Quality Gate 🚧 IN PROGRESS
 
 ### Objective
 
@@ -1069,12 +1069,16 @@ portfolio migration.
 2. ✅ Reproduced the formatter diff locally.
 3. ✅ Applied `gofmt` to the Docker integration test, correcting continuation
    indentation and adding the missing final newline.
-4. ✅ Kept the CI workflow strict so future formatting drift still fails early.
-5. ✅ Updated the task index and AI usage log.
+4. ✅ Confirmed the replacement quality and container jobs both pass.
+5. ✅ Updated deprecated Node 20-based action majors to their current v7
+   releases after checking the official release metadata.
+6. ✅ Kept the CI workflow strict so future formatting drift still fails early.
+7. ✅ Updated the task index and AI usage log.
 
 ### Files Modified
 
 - `docker_integration_test.go`
+- `.github/workflows/ci.yml`
 - `tasks/TASK-32.md`
 - `tasks/README.md`
 - `docs/AI_LOG.md`
@@ -1088,4 +1092,5 @@ portfolio migration.
 - `go vet ./...` ✅
 - `CGO_ENABLED=0 go build ./...` ✅
 - `node --check static/app.js` ✅
-- Replacement GitHub Actions run: pending
+- Replacement GitHub Actions run `33685960445` ✅
+- Final annotation-free workflow run: pending

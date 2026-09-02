@@ -72,7 +72,7 @@ Tasks contain:
 | 29   | Export Downloads         | Audit headers + multi-format export | 60min |
 | 30   | Portfolio Polish & CI    | Documentation + automated validation | 45min |
 | 31   | Responsive & A11y Polish | Mobile, keyboard + reduced motion     | 45min |
-| 32   | CI Formatting Repair     | Canonical Go formatting               | 10min |
+| 32   | CI Quality Gate Repair   | Formatting + action runtimes           | 10min |
 
 **Total Time:** ~15 hours 20 minutes
 **Total Tests:** 30 golden tests + color, handler, container, and unit tests
