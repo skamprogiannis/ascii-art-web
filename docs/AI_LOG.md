@@ -1043,3 +1043,49 @@ portfolio quality audit.
 - `go vet ./...` ✅
 - `CGO_ENABLED=0 go build ./...` ✅
 - `./docker_integration_test.sh`: 4/4 checks passed; resources cleaned ✅
+
+---
+
+## Phase 12: CI Formatting Repair
+
+**Start Date:** 2026-09-03
+**Branch:** portfolio-main
+**Approach:** Reproduce the remote quality-gate failure and apply canonical formatting
+**Goal:** Restore a green GitHub Actions run without changing integration-test behavior.
+
+---
+
+## TASK-32: Restore CI Formatting Gate 🚧 IN PROGRESS
+
+### Objective
+
+Fix the formatting defect reported by the first GitHub Actions run after the
+portfolio migration.
+
+### Implementation Steps
+
+1. ✅ Read the failed GitHub Actions log and isolated the failure to the
+   `gofmt -l .` step.
+2. ✅ Reproduced the formatter diff locally.
+3. ✅ Applied `gofmt` to the Docker integration test, correcting continuation
+   indentation and adding the missing final newline.
+4. ✅ Kept the CI workflow strict so future formatting drift still fails early.
+5. ✅ Updated the task index and AI usage log.
+
+### Files Modified
+
+- `docker_integration_test.go`
+- `tasks/TASK-32.md`
+- `tasks/README.md`
+- `docs/AI_LOG.md`
+
+### Validation
+
+- Branch: `portfolio-main`
+- `gofmt -d .` ✅
+- `go test -short ./...` ✅
+- `go test -race -short ./...` ✅
+- `go vet ./...` ✅
+- `CGO_ENABLED=0 go build ./...` ✅
+- `node --check static/app.js` ✅
+- Replacement GitHub Actions run: pending

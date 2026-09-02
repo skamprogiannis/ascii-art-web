@@ -39,13 +39,13 @@ func TestDockerIntegration(t *testing.T) {
 
 	// Check for test failures in output
 	if strings.Contains(string(output), "Some tests failed") ||
-	   strings.Contains(string(output), "❌") {
+		strings.Contains(string(output), "❌") {
 		t.Error("One or more Docker integration tests failed")
 	}
 
 	// Verify success message
 	if !strings.Contains(string(output), "All tests passed") &&
-	   !strings.Contains(string(output), "🎉") {
+		!strings.Contains(string(output), "🎉") {
 		t.Error("Docker integration tests did not complete successfully")
 	}
 }
