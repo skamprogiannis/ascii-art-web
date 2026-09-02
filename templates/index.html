@@ -39,21 +39,21 @@
                     <label>Banner style</label>
                     <div class="style-cards" role="radiogroup" aria-label="Banner style">
                         <label class="style-card {{if eq .Banner "standard"}}active{{end}}">
-                            <input type="radio" name="banner" value="standard" {{if eq .Banner "standard"}}checked{{end}}>
+                            <input type="radio" name="banner" value="standard" aria-label="Standard banner" {{if eq .Banner "standard"}}checked{{end}}>
                             <pre class="style-preview"> _  _
 | || |
 |_||_|</pre>
                             <span class="style-name">Standard</span>
                         </label>
                         <label class="style-card {{if eq .Banner "shadow"}}active{{end}}">
-                            <input type="radio" name="banner" value="shadow" {{if eq .Banner "shadow"}}checked{{end}}>
+                            <input type="radio" name="banner" value="shadow" aria-label="Shadow banner" {{if eq .Banner "shadow"}}checked{{end}}>
                             <pre class="style-preview">_   _
 | |_| |
 \___/ </pre>
                             <span class="style-name">Shadow</span>
                         </label>
                         <label class="style-card {{if eq .Banner "thinkertoy"}}active{{end}}">
-                            <input type="radio" name="banner" value="thinkertoy" {{if eq .Banner "thinkertoy"}}checked{{end}}>
+                            <input type="radio" name="banner" value="thinkertoy" aria-label="Thinkertoy banner" {{if eq .Banner "thinkertoy"}}checked{{end}}>
                             <pre class="style-preview">o  o
 |  |
 o--o</pre>
@@ -63,7 +63,7 @@ o--o</pre>
                 </div>
 
                 <div class="form-group">
-                    <label>Art color <span class="field-hint">(optional)</span></label>
+                    <label for="color-text">Art color <span class="field-hint">(optional)</span></label>
                     <div class="color-row">
                         <div class="color-swatch-wrap" title="Click to open color picker">
                             <input type="color" id="color-picker" value="#8b5cf6" aria-label="Pick a color">
@@ -116,8 +116,8 @@ o--o</pre>
             <div class="result-header">
                 <h2>Output</h2>
                 <div class="output-actions">
-                    <button type="button" id="theme-toggle" class="copy-btn" title="Toggle Dark/Light Canvas">◑ Background</button>
                     {{if .AsciiArt}}
+                        <button type="button" id="theme-toggle" class="copy-btn" title="Toggle Dark/Light Canvas">◑ Background</button>
                         <span class="badge badge-success">✓ Generated</span>
                         <button class="copy-btn" id="copy-btn" type="button">⎘ Copy</button>
                         <select id="export-format" class="copy-btn export-format" aria-label="Export format">

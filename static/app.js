@@ -111,9 +111,9 @@
             <div class="result-header">
                 <h2>Output</h2>
                 <div class="output-actions">
-                    <button type="button" id="theme-toggle" class="copy-btn" title="Toggle Dark/Light Canvas">◑ Background</button>
                     ${hasArt
-                        ? `<span class="badge badge-success">✓ Generated</span>
+                        ? `<button type="button" id="theme-toggle" class="copy-btn" title="Toggle Dark/Light Canvas">◑ Background</button>
+                           <span class="badge badge-success">✓ Generated</span>
                            <button class="copy-btn" id="copy-btn" type="button">⎘ Copy</button>
                            <select id="export-format" class="copy-btn export-format" aria-label="Export format">
                                <option value="txt">TXT</option>
@@ -142,12 +142,10 @@
         if (copyBtn) {
             copyBtn.addEventListener('click', () => {
                 navigator.clipboard.writeText(getCurrentArtText()).then(() => {
-                    copyBtn.textContent = '✓ Copied!';
-                    copyBtn.classList.add('copied');
-                    setTimeout(() => {
-                        copyBtn.textContent = '⎘ Copy';
-                        copyBtn.classList.remove('copied');
-                    }, 2000);
+                    flashButtonState(copyBtn, '✓ Copied!', 'copied');
+                }).catch((err) => {
+                    console.error('Failed to copy art:', err);
+                    flashButtonState(copyBtn, '✕ Copy failed');
                 });
             });
         }
@@ -211,13 +209,6 @@
         }
     };
 
-    document.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter' && document.activeElement !== textarea) {
-            event.preventDefault();
-            form.requestSubmit();
-        }
-    });
-
     document.querySelectorAll('.style-card input[type=radio]').forEach((radio) => {
         radio.addEventListener('change', () => {
             document.querySelectorAll('.style-card').forEach((card) => card.classList.remove('active'));
@@ -270,12 +261,15 @@
                 fetchAbortController.abort();
             }
             outputPanel.innerHTML = emptyStateHTML;
+            outputPanel.style.opacity = '1';
+            outputPanel.setAttribute('aria-busy', 'false');
             return;
         }
 
         event.preventDefault();
         warning.classList.remove('visible');
         outputPanel.style.opacity = '0.5';
+        outputPanel.setAttribute('aria-busy', 'true');
 
         if (fetchAbortController) {
             fetchAbortController.abort();
@@ -317,6 +311,7 @@
         } finally {
             if (!currentController.signal.aborted) {
                 outputPanel.style.opacity = '1';
+                outputPanel.setAttribute('aria-busy', 'false');
             }
         }
     });
@@ -333,6 +328,8 @@
             fetchAbortController.abort();
         }
         outputPanel.innerHTML = emptyStateHTML;
+        outputPanel.style.opacity = '1';
+        outputPanel.setAttribute('aria-busy', 'false');
     });
 
     if (substrInput) {
@@ -390,6 +387,9 @@
     };
 
     initMatrix();
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        return;
+    }
     setInterval(drawMatrix, 50);
     window.addEventListener('resize', initMatrix);
 })();

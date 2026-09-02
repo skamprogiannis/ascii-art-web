@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
@@ -11,7 +9,7 @@
     --accent-2:     #06b6d4;
     --accent-glow:  rgba(139,92,246,0.35);
     --text:         #f1f5f9;
-    --text-muted:   #64748b;
+    --text-muted:   #8492a6;
     --text-subtle:  #94a3b8;
     --success:      #34d399;
     --error:        #f87171;
@@ -223,7 +221,17 @@ kbd {
     user-select: none;
 }
 
-.style-card input[type=radio] { display: none; }
+.style-card input[type="radio"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
 
 .style-card:hover {
     background: rgba(139,92,246,0.07);
@@ -234,6 +242,11 @@ kbd {
     border-color: var(--accent);
     background: rgba(139,92,246,0.1);
     box-shadow: 0 0 0 3px rgba(139,92,246,0.12);
+}
+
+.style-card:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(139,92,246,0.2);
 }
 
 /* style-preview is a <pre> — renders correctly without <br> hacks */
@@ -303,6 +316,11 @@ input[type="color"] {
     box-shadow: 0 0 0 3px rgba(139,92,246,0.15);
 }
 
+.color-swatch-wrap:focus-within .color-swatch {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(139,92,246,0.2);
+}
+
 /* ── Color presets ── */
 .color-presets {
     display: flex;
@@ -312,8 +330,8 @@ input[type="color"] {
 }
 
 .color-presets button {
-    width: 24px;
-    height: 24px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     border: 2px solid transparent;
     background: var(--c);
@@ -321,6 +339,11 @@ input[type="color"] {
     padding: 0;
     transition: transform 0.15s var(--ease), border-color 0.15s var(--ease), box-shadow 0.15s var(--ease);
     flex-shrink: 0;
+}
+
+.color-presets button:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 3px;
 }
 
 .color-presets button:hover {
@@ -460,12 +483,16 @@ input[type="color"] {
     font-size: 0.78rem;
     font-family: inherit;
     cursor: pointer;
-    transition: all 0.18s var(--ease);
+    transition: background 0.18s var(--ease), color 0.18s var(--ease), border-color 0.18s var(--ease), opacity 0.18s var(--ease);
 }
 
 .copy-btn:hover  { background: rgba(139,92,246,0.12); color: var(--text); border-color: var(--accent); }
 .copy-btn.copied { color: var(--success); border-color: rgba(52,211,153,0.4); background: rgba(52,211,153,0.08); }
 .copy-btn:disabled { cursor: wait; opacity: 0.7; }
+.copy-btn:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
 .export-format { min-width: 5.75rem; }
 
 /* ── Output block ──
@@ -538,4 +565,15 @@ footer {
     /* Stack color input below swatch on small screens */
     .color-row { flex-wrap: wrap; }
     .color-row input[type="text"] { flex: 1 1 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+
+    #matrix-bg { display: none; }
 }
